@@ -1,0 +1,24 @@
+{
+  "name": "2fa-vote",
+  "version": "1.0.0",
+  "description": "2-Factor Authentication Voting System - Proof of Concept",
+  "main": "js/main.js",
+  "scripts": {
+    "prepare": "node js/prepare.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/fuji97/2fa-vote.git"
+  },
+  "author": "Federico Rapetti",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/fuji97/2fa-vote/issues"
+  },
+  "homepage": "https://github.com/fuji97/2fa-vote#readme",
+  "dependencies": {
+    "circom": "^0.5.45",
+    "snarkjs": "^0.4.6"
+  }
+}
