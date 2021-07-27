@@ -19,6 +19,8 @@
   "homepage": "https://github.com/fuji97/2fa-vote#readme",
   "dependencies": {
     "circom": "^0.5.45",
+    "lrs": "^0.1.5",
+    "lrs-ecdsa": "file:lrs-ecdsa",
     "snarkjs": "^0.4.6"
   }
 }
