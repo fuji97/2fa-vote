@@ -1,22 +1,20 @@
 import {KeyPair, PublicParameters, Axis} from "./types";
 import {Point} from "./types";
 import {Base8} from "./babyjubjub";
+import {decrypt, ElGamal} from "./elgamal";
 
 type PublicKey = Point;
 type Scope = Array<PublicKey>;
 
-class Authority {
+export class Authority {
     pp: PublicParameters;
     keypair: KeyPair;
     verifiers: Array<PublicKey>;
     voters: Array<PublicKey>;
     casters: Map<PublicKey, Scope>;
 
-    constructor(privKey: Axis) {
-        this.keypair = {
-            privateKey: privKey,
-            publicKey: Base8.mulScalar(privKey)
-        }
+    constructor(keypair: KeyPair) {
+        this.keypair = keypair;
         this.pp = {
             authorityKey: this.keypair.publicKey
         };
@@ -24,5 +22,9 @@ class Authority {
         this.verifiers = new Array<Point>();
         this.voters = new Array<Point>();
         this.casters = new Map<PublicKey, Scope>();
+    }
+
+    decrypt(enc: ElGamal): Point {
+        return decrypt(enc, this.keypair.privateKey);
     }
 }

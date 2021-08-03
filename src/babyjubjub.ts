@@ -10,7 +10,8 @@ const bigInt = require("big-integer");
 
 // TODO Check boundaries
 const MIN_K = "1"
-const MAX_K = "21888242871839275222246405745257275088548364400416034343698204186575808495617"
+//const MAX_K = "21888242871839275222246405745257275088548364400416034343698204186575808495617"
+const MAX_K = "88242871839275222246405745257275088548364400416034343698204186575808495617"
 
 export class Point implements _Point {
     x: Axis;
@@ -54,6 +55,10 @@ export class Point implements _Point {
 
     toArray = (): Array<Axis> => {
         return [this.x, this.y];
+    }
+
+    equals(obj: Point): boolean {
+        return this.x == obj.x && this.y == obj.y;
     }
 
     static unpack = (buff: Buffer): Point => {

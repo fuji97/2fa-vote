@@ -10,6 +10,7 @@ export interface Point {
     pack(): Buffer;
     toString(): string;
     toArray(): Array<Axis>;
+    equals(obj: Point): boolean;
 }
 
 export type PublicKey = Point;

@@ -31,7 +31,7 @@ export function prv2pub(privKey: Axis): Point {
     return pointFromArray(eddsa.prv2pub(Buffer.from(privKey.toString(16), 'hex')));
 }
 
-export function generateKeypair(): KeyPair {
+export function generateEddsaKeypair(): KeyPair {
     const privKey = randomScalar();
     return {
         privateKey: privKey,

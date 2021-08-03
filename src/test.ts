@@ -1,21 +1,61 @@
 import {Voter} from "./Voter";
-import {Base8, pointFromArray, randomScalar} from "./babyjubjub";
-import {Point, PublicParameters} from "./types";
-import {EddsaSign, generateKeypair, verify} from "./eddsa";
+import {Base8, generateKeypair, scalarToPoint} from "./babyjubjub";
+import {PublicParameters, Vote} from "./types";
+import {generateEddsaKeypair} from "./eddsa";
 import assert from "assert";
+import {Caster} from "./Caster";
+import {Authority} from "./Authority";
+import {toJson} from "./utils";
+import {encrypt} from "./elgamal";
 
 const eddsa = require("circomlib").eddsa;
 const mimc = require("circomlib").mimc7;
 const bigInt = require("big-integer");
 
 const pp: PublicParameters = {
-    authorityKey: Base8,
+    authorityKey: Base8
 
-}
+};
 
-let voter = new Voter(generateKeypair(), pp);
+(async () => {
+    try {
+        let authority = new Authority(generateKeypair());
+        let voter = new Voter(generateEddsaKeypair(), authority.pp);
+        let caster = new Caster(generateKeypair(), authority.pp);
 
-console.log(voter.castVote(1n));
+        let vote: Vote = 1n;
+        let pointVote = scalarToPoint(vote);
+
+        console.log("Voter creating and signing vote...")
+        const ballot = voter.castVote(vote);
+        //console.log(vote);
+
+        console.log("\n Caster encrypting and generating proofs...")
+        const encryptedBallot = await caster.encryptVote(ballot.vote, ballot.pubKey, ballot.sign);
+
+        const testEncrypt = encrypt(pointVote, authority.pp.authorityKey, caster.lastUsedK);
+        const testEncrypt2 = encrypt(pointVote, authority.pp.authorityKey, caster.lastUsedK);
+
+        console.log("\nEncrypted ballots comparison:");
+        console.log({C: encryptedBallot.vote.C.toString(), D: encryptedBallot.vote.D.toString()});
+        console.log({C: testEncrypt.C.toString(), D: testEncrypt.D.toString()})
+        assert(testEncrypt.C.equals(testEncrypt2.C) && testEncrypt.D.equals(testEncrypt2.D), "Not a procedural encryption");
+
+        assert(encryptedBallot.vote.C.equals(testEncrypt.C) && encryptedBallot.vote.D.equals(testEncrypt.D), "Encrypted ballots are different");
+
+        const decryptedBallot = authority.decrypt(encryptedBallot.vote);
+
+        console.log("\nCompare votes:")
+        console.log(pointVote.toString());
+        console.log(decryptedBallot.toString());
+        assert(decryptedBallot == pointVote, "Encrypted point and decrypted point are different");
+
+    } catch (e) {
+        console.error(e);
+    }
+})();
+
+
 
 // const preimage = 10n;
 // const key = 1684557355573270755209121427403383784906688334546342811893263215061668769545n;

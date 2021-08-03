@@ -6,7 +6,7 @@ import {Sign} from "./sign";
 
 export type Ballot = {
     vote: Point;
-    proof: Proof<CeviInput>;
+    proof: Proof;
     voterSign: LrsSign;
     casterSign: Sign;
 };

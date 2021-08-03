@@ -11,14 +11,14 @@ type ProofInput = {
 }
 
 const CESV_CIRCUIT: ProofInput = {
-    wasm: "../out/correct_encrypt_signed_vote/circuit.wasm",
-    zkey: "../out/correct_encrypt_signed_vote/circuit.zkey",
+    wasm: "./out/correct_encrypt_signed_vote/circuit.wasm",
+    zkey: "./out/correct_encrypt_signed_vote/circuit.zkey",
     verificationKey: require("../out/correct_encrypt_signed_vote/verification_key.json") as VerificationKey
 }
 
 const CEVI_CIRCUIT: ProofInput = {
-    wasm: "../out/correct_encrypt_valid_input/circuit.wasm",
-    zkey: "../out/correct_encrypt_valid_input/circuit.zkey",
+    wasm: "./out/correct_encrypt_valid_input/circuit.wasm",
+    zkey: "./out/correct_encrypt_valid_input/circuit.zkey",
     verificationKey: require("../out/correct_encrypt_valid_input/verification_key.json") as VerificationKey
 }
 
@@ -60,9 +60,9 @@ export type CeviInput = ElGamalInput
 
 
 
-export type Proof<T> = {
+export type Proof = {
     proof: any;
-    publicSignals: T;
+    publicSignals: Array<Axis>;
 }
 
 // class ProofPublicDataLoader {
@@ -78,20 +78,20 @@ export type Proof<T> = {
 //
 // }
 
-export async function generateCesvProof(input: CesvInput): Promise<Proof<CesvPublicInput>> {
+export async function generateCesvProof(input: CesvInput): Promise<Proof> {
     const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CESV_CIRCUIT.wasm, CESV_CIRCUIT.zkey);
     return { proof, publicSignals };
 }
 
-export async function generateCeviProof(input: CeviInput): Promise<Proof<CeviPublicInput>> {
+export async function generateCeviProof(input: CeviInput): Promise<Proof> {
     const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CEVI_CIRCUIT.wasm, CEVI_CIRCUIT.zkey);
     return { proof, publicSignals };
 }
 
-export async function verifyCesvProof(proof: Proof<CesvPublicInput>): Promise<boolean> {
+export async function verifyCesvProof(proof: Proof): Promise<boolean> {
     return await snarkjs.groth16.verify(CESV_CIRCUIT.verificationKey, proof.publicSignals, proof.proof);
 }
 
-export async function verifyCeviProof(proof: Proof<CeviPublicInput>): Promise<boolean> {
+export async function verifyCeviProof(proof: Proof): Promise<boolean> {
     return await snarkjs.groth16.verify(CEVI_CIRCUIT.verificationKey, proof.publicSignals, proof.proof);
 }

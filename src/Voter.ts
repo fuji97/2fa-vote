@@ -1,5 +1,5 @@
 import {KeyPair, PublicParameters, Vote, PublicKey} from "./types";
-import {EddsaSign, generateKeypair, sign, verify} from "./eddsa";
+import {EddsaSign, generateEddsaKeypair, sign, verify} from "./eddsa";
 import {scalarToPoint} from "./babyjubjub";
 import assert from "assert";
 
@@ -22,7 +22,7 @@ export class Voter {
     }
 
     castVote(vote: Vote): CastedVote {
-        const pair = generateKeypair();
+        const pair = generateEddsaKeypair();
         let sig = sign(vote, pair.privateKey);
 
         // Check signature
