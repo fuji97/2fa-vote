@@ -17,8 +17,10 @@
   },
   "homepage": "https://github.com/fuji97/2fa-vote#readme",
   "dependencies": {
+    "bigint-conversion": "^2.1.12",
     "circom": "^0.5.45",
     "circomlib": "file:circomlib",
+    "ffjavascript": "^0.2.38",
     "lrs": "^0.1.5",
     "lrs-ecdsa": "file:lrs-ecdsa",
     "snarkjs": "^0.4.6"

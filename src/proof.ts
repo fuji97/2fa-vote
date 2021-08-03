@@ -28,9 +28,9 @@ export type SignedVote = {
 }
 
 type ElGamalPublicInput = {
-    P: Point;
-    B: Point;
-    Y: Point;
+    P: Array<Axis>;
+    B: Array<Axis>;
+    Y: Array<Axis>;
 }
 
 type ElGamalInput = ElGamalPublicInput & {
@@ -39,17 +39,17 @@ type ElGamalInput = ElGamalPublicInput & {
 }
 
 type EddsaPublicInput = {
-    pub: Point
+    pub: Array<Axis>
 }
 
 type EddsaInput = EddsaPublicInput & {
     s: Axis,
-    R8: Point
+    R8: Array<Axis>
 }
 
 type Output = {
-    C: Point;
-    D: Point;
+    C: Array<Axis>;
+    D: Array<Axis>;
 }
 
 export type CesvPublicInput = ElGamalPublicInput & EddsaPublicInput & Output
@@ -78,20 +78,20 @@ export type Proof<T> = {
 //
 // }
 
-export async function generateCesvProof(input: CesvInput): Promise<Proof<CesvInput>> {
+export async function generateCesvProof(input: CesvInput): Promise<Proof<CesvPublicInput>> {
     const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CESV_CIRCUIT.wasm, CESV_CIRCUIT.zkey);
     return { proof, publicSignals };
 }
 
-export async function generateCeviProof(input: CeviInput): Promise<Proof<CeviInput>> {
+export async function generateCeviProof(input: CeviInput): Promise<Proof<CeviPublicInput>> {
     const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CEVI_CIRCUIT.wasm, CEVI_CIRCUIT.zkey);
     return { proof, publicSignals };
 }
 
-export async function verifyCesvProof(proof: Proof<CesvInput>): Promise<boolean> {
+export async function verifyCesvProof(proof: Proof<CesvPublicInput>): Promise<boolean> {
     return await snarkjs.groth16.verify(CESV_CIRCUIT.verificationKey, proof.publicSignals, proof.proof);
 }
 
-export async function verifyCeviProof(proof: Proof<CeviInput>): Promise<boolean> {
+export async function verifyCeviProof(proof: Proof<CeviPublicInput>): Promise<boolean> {
     return await snarkjs.groth16.verify(CEVI_CIRCUIT.verificationKey, proof.publicSignals, proof.proof);
 }
