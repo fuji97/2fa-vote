@@ -18,11 +18,16 @@ compile_circuit() {
 
   echo "Creating keys..."
   snarkjs zkey new "$3/circuit.r1cs" "$2" "$3/circuit_0000.zkey"
-  snarkjs zkey contribute "$3/circuit_0000.zkey" "$3/circuit_final.zkey"
-  snarkjs zkey export verificationkey "$3/circuit_final.zkey" "$3/verification_key.json"
+  snarkjs zkey contribute "$3/circuit_0000.zkey" "$3/circuit.zkey"
+  snarkjs zkey export verificationkey "$3/circuit.zkey" "$3/verification_key.json"
   echo ""
   echo "Keys created!"
 }
+
+echo "This script will compile the correct_encrypt_signed_vote and correct_encrypt_valid_input circuits and generate
+the corresponding keys fron the Power of Tao ceremony specified."
+echo "When generating keys an input will be requested to simulate entropy."
+echo ""
 
 mkdir -p $CESV_OUT
 mkdir -p $CEVI_OUT
