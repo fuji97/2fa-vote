@@ -1,9 +1,12 @@
 
 // @ts-ignore
 import {babyJub as bjj} from "circomlib";
-import {Axis, Point as _Point} from "./types";
+import {Axis, KeyPair, Point as _Point} from "./types";
+// @ts-ignore
+import {Scalar} from "ffjavascript";
 import assert from "assert";
-import randBetween from "big-integer";
+
+const bigInt = require("big-integer");
 
 // TODO Check boundaries
 const MIN_K = "1"
@@ -59,15 +62,45 @@ export class Point implements _Point {
     }
 
     static fromArray = (point: Array<Axis>): Point => {
-        return new Point(point[0], point[1]);
+        return pointFromArray(point);
     }
 }
 
 export const Generator = Point.fromArray(bjj.Generator);
 export const Base8 = Point.fromArray(bjj.Base8);
 
-export function randomScalar(min?: string, max?: string, rng?: () => number): Axis {
+export function randomScalar(min?: string, max?: string): Axis {
+    const rand = bigInt.randBetween(min ?? MIN_K, max ?? MAX_K);
+    return BigInt(rand);
+}
 
-    // @ts-ignore
-    return BigInt(randBetween(min ?? MIN_K, max ?? MAX_K, rng));
+export function scalarToPoint(scalar: Axis): Point {
+    return Base8.mulScalar(scalar);
+}
+
+export function prv2pubSubgroup(scalar: Axis): Point {
+    return Base8.mulScalar(Scalar.shr(scalar, 3));
+}
+export function generateKeypairSubgroup(min?: string, max?: string): KeyPair {
+    const priv = randomScalar(min, max);
+    const pub = prv2pubSubgroup(priv);
+    return {
+        privateKey: priv,
+        publicKey: pub
+    }
+}
+
+
+export function generateKeypair(min?: string, max?: string): KeyPair {
+    const priv = randomScalar(min, max);
+    const pub = scalarToPoint(priv);
+    return {
+        privateKey: priv,
+        publicKey: pub
+    }
+}
+
+export function pointFromArray(arr: Array<Axis>): Point {
+    assert(arr.length == 2, "Invalid length");
+    return new Point(arr[0], arr[1]);
 }

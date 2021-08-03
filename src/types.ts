@@ -12,8 +12,10 @@ export interface Point {
     toArray(): Array<Axis>;
 }
 
+export type PublicKey = Point;
+
 export type KeyPair = {
-    publicKey: Point;
+    publicKey: PublicKey;
     privateKey: Axis;
 }
 
@@ -21,3 +23,5 @@ export type PublicParameters = {
     authorityKey: Point;
 
 }
+
+export type Vote = 1n | 2n;
