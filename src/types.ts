@@ -13,6 +13,8 @@ export interface Point {
     equals(obj: Point): boolean;
 }
 
+export type Scope = string[];
+
 export type PublicKey = Point;
 
 export type KeyPair = {
@@ -20,9 +22,15 @@ export type KeyPair = {
     privateKey: Axis;
 }
 
+export type LrsKeyPair = {
+    publicKey: string;
+    privateKey: string;
+}
+
 export type PublicParameters = {
     authorityKey: Point;
-
+    elGamalBasePoint: Point;
+    elGamalPPoint: Point;
 }
 
 export type Vote = 1n | 2n;

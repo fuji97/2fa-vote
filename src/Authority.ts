@@ -16,7 +16,9 @@ export class Authority {
     constructor(keypair: KeyPair) {
         this.keypair = keypair;
         this.pp = {
-            authorityKey: this.keypair.publicKey
+            authorityKey: this.keypair.publicKey,
+            elGamalBasePoint: Base8,
+            elGamalPPoint: Base8
         };
 
         this.verifiers = new Array<Point>();

@@ -28,6 +28,7 @@ template ElGamalEncrypt() {
     // TODO Maybe add P curve check
 
     // Calculate c1
+    // (k * P)
     component cx = EscalarMulAny(253);
     cx.p[0] <== P[0];
     cx.p[1] <== P[1];

@@ -62,7 +62,7 @@ export type CeviInput = ElGamalInput
 
 export type Proof = {
     proof: any;
-    publicSignals: Array<Axis>;
+    publicSignals: Array<string>;
 }
 
 // class ProofPublicDataLoader {
@@ -94,4 +94,54 @@ export async function verifyCesvProof(proof: Proof): Promise<boolean> {
 
 export async function verifyCeviProof(proof: Proof): Promise<boolean> {
     return await snarkjs.groth16.verify(CEVI_CIRCUIT.verificationKey, proof.publicSignals, proof.proof);
+}
+
+export class CesvInputConverter {
+    static fromArray(arr: Array<string>): CesvPublicInput {
+        const intArr = arr.map(x => BigInt(x));
+        return {
+            C: intArr.slice(0, 2),
+            D: intArr.slice(2, 4),
+            P: intArr.slice(4, 6),
+            B: intArr.slice(6, 8),
+            Y: intArr.slice(8, 10),
+            pub: intArr.slice(10, 12)
+        }
+    }
+
+    static toArray(input: CesvPublicInput): Array<string> {
+        const arr = [
+            ...input.C,
+            ...input.D,
+            ...input.P,
+            ...input.B,
+            ...input.Y,
+            ...input.pub,
+        ];
+        return arr.map(x => x.toString());
+    }
+}
+
+export class CeviInputConverter {
+    static fromArray(arr: Array<string>): CeviPublicInput {
+        const intArr = arr.map(x => BigInt(x));
+        return {
+            C: intArr.slice(0, 2),
+            D: intArr.slice(2, 4),
+            P: intArr.slice(4, 6),
+            B: intArr.slice(6, 8),
+            Y: intArr.slice(8, 10),
+        }
+    }
+
+    static toArray(input: CeviPublicInput): Array<string> {
+        const arr = [
+            ...input.C,
+            ...input.D,
+            ...input.P,
+            ...input.B,
+            ...input.Y,
+        ];
+        return arr.map(x => x.toString());
+    }
 }

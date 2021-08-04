@@ -34,7 +34,8 @@ export class Point implements _Point {
     }
 
     invert = (): Point => {
-        return new Point(0n - this.x, this.y)
+        let a = bjj.F.e(0n - this.x);
+        return new Point(a, this.y)
     }
 
     pack = (): Buffer => {
@@ -57,7 +58,7 @@ export class Point implements _Point {
         return [this.x, this.y];
     }
 
-    equals(obj: Point): boolean {
+    equals(obj: _Point): boolean {
         return this.x == obj.x && this.y == obj.y;
     }
 
