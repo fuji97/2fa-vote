@@ -1,19 +1,19 @@
 import {Point} from "./types";
-import {CeviInput, Proof} from "./proof";
+import {CeviInput, Proof, ProofSignals} from "./proof";
 import {LrsSign} from "./lrs";
-import {Sign} from "./sign";
 import {EncryptedVote} from "./Caster";
 import {bigintToBuf, bufToBigint, TypedArray} from "bigint-conversion";
 import assert from "assert";
 import {ElGamal} from "./elgamal";
 import * as babyjub from "./babyjubjub";
-
+import * as ecdsa from "./ecdsa";
 
 export type Ballot = {
     vote: ElGamal,
-    proof: Proof
+    proof: Proof,
+    caster: number,
     voterSign?: LrsSign;
-    casterSign?: Sign;
+    casterSign?: ecdsa.Sign;
 };
 
 export const BallotConverter = {
@@ -24,7 +24,7 @@ export const BallotConverter = {
         return Buffer.from([...arr]).toString('hex');
     },
 
-    fromString(str: string, publicSignals: Array<string>): Ballot {
+    fromString(str: string, caster: number): Ballot {
         const buf = Buffer.from(str, 'hex');
         assert(buf.length === 32*14);
         const splits = split32(buf);
@@ -34,27 +34,25 @@ export const BallotConverter = {
                 C: babyjub.Point.unpack(splits[0]),
                 D: babyjub.Point.unpack(splits[1])
             },
+            caster: caster,
             proof: {
-                publicSignals: publicSignals,
-                proof: {
-                    pi_a: [
-                        bufferToBigInt(splits[2]).toString(),
-                        bufferToBigInt(splits[3]).toString(),
-                        bufferToBigInt(splits[4]).toString()
-                    ],
-                    pi_b: [
-                        [bufferToBigInt(splits[5]).toString(),bufferToBigInt(splits[6]).toString()],
-                        [bufferToBigInt(splits[7]).toString(),bufferToBigInt(splits[8]).toString()],
-                        [bufferToBigInt(splits[9]).toString(),bufferToBigInt(splits[10]).toString()]
-                    ],
-                    pi_c: [
-                        bufferToBigInt(splits[11]).toString(),
-                        bufferToBigInt(splits[12]).toString(),
-                        bufferToBigInt(splits[13]).toString()
-                    ],
-                    protocol: "groth16",
-                    curve: "bn128"
-                }
+                pi_a: [
+                    bufferToBigInt(splits[2]).toString(),
+                    bufferToBigInt(splits[3]).toString(),
+                    bufferToBigInt(splits[4]).toString()
+                ],
+                pi_b: [
+                    [bufferToBigInt(splits[5]).toString(),bufferToBigInt(splits[6]).toString()],
+                    [bufferToBigInt(splits[7]).toString(),bufferToBigInt(splits[8]).toString()],
+                    [bufferToBigInt(splits[9]).toString(),bufferToBigInt(splits[10]).toString()]
+                ],
+                pi_c: [
+                    bufferToBigInt(splits[11]).toString(),
+                    bufferToBigInt(splits[12]).toString(),
+                    bufferToBigInt(splits[13]).toString()
+                ],
+                protocol: "groth16",
+                curve: "bn128"
             }
         }
     },
@@ -62,15 +60,16 @@ export const BallotConverter = {
     fromEncryptedVote(vote: EncryptedVote): Ballot {
         return {
             vote: vote.vote,
-            proof: vote.cevi
+            proof: vote.cevi.proof,
+            caster: vote.caster
         }
     },
 }
 
 function serializeProof(proof: Proof): Uint8Array {
-    let all = [...proof.proof.pi_a, ...proof.proof.pi_b, ...proof.proof.pi_c].flat();
-    all = all.map(x => Uint8Array.from(bigIntToBuffer32(BigInt(x))));
-    return Uint8Array.from(all.map(typedArray => [...new Uint8Array(typedArray.buffer)]).flat());
+    const all = [...proof.pi_a, ...proof.pi_b, ...proof.pi_c].flat();
+    const nums = all.map(x => Uint8Array.from(bigIntToBuffer32(BigInt(x))));
+    return Uint8Array.from(nums.map(typedArray => [...new Uint8Array(typedArray.buffer)]).flat());
 }
 
 export function bigIntToBuffer32(num: bigint): Uint8Array {

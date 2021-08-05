@@ -15,6 +15,7 @@ import {
 } from "./proof";
 import {ElGamal} from "./elgamal";
 import {Ballot, BallotConverter} from "./ballot";
+import * as ecdsa from "./ecdsa";
 
 export type CastedVote = {
     vote: Vote;
@@ -26,10 +27,12 @@ export class Voter {
     keypair: LrsKeyPair;
     publicParameters: PublicParameters;
     scope: Array<string>;
-    keys: Array<KeyPair>
+    caster: Buffer; // TDO Change to more clean rappresentation
+    keys: Array<KeyPair>;
 
-    constructor(keypair: LrsKeyPair, scope: Array<string>, publicParameters: PublicParameters) {
+    constructor(keypair: LrsKeyPair, scope: Array<string>, caster: Buffer, publicParameters: PublicParameters) {
         this.keypair = keypair;
+        this.caster = caster;
         this.publicParameters = publicParameters;
         this.scope = scope;
 
@@ -53,10 +56,10 @@ export class Voter {
     }
 
     async checkEncryptedBallot(ballot: EncryptedVote) {
-        await verifyCesvProof(ballot.cesv);
+        await verifyCesvProof(ballot.cesv.proof, ballot.cesv.publicSignals);
         this.checkCesvInput(CesvInputConverter.fromArray(ballot.cesv.publicSignals), ballot.vote);
 
-        await verifyCeviProof(ballot.cevi);
+        await verifyCeviProof(ballot.cevi.proof, ballot.cevi.publicSignals);
         this.checkCeviInput(CeviInputConverter.fromArray(ballot.cevi.publicSignals), ballot.vote);
     }
 
@@ -78,13 +81,16 @@ export class Voter {
         assert(Point.fromArray(input.Y).equals(this.publicParameters.authorityKey), "Invalid Authority public key");
     }
 
-    signLrs(encVote: EncryptedVote): Ballot {
-        let ballot = BallotConverter.fromEncryptedVote(encVote);
+    signBallot(ballot: Ballot): Ballot {
         const voteStr = BallotConverter.voteToHexString(ballot);
-        ballot.voterSign = lrs.sign(voteStr, this.keypair.privateKey, this.scope);
+        ballot.voterSign = lrs.sign(voteStr, this.keypair, this.scope);
 
         assert(lrs.verify(voteStr, ballot.voterSign, this.scope), "Invalid Linkable Ring Signature");
 
         return ballot;
+    }
+
+    async verifyCasterSign(ballot: Ballot): Promise<void> {
+        await ecdsa.verify(BallotConverter.voteToHexString(ballot), this.caster, <ecdsa.Sign>ballot.casterSign);
     }
 }

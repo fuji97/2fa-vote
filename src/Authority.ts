@@ -1,17 +1,16 @@
-import {KeyPair, PublicParameters, Axis} from "./types";
+import {KeyPair, PublicParameters, Axis, Scope} from "./types";
 import {Point} from "./types";
 import {Base8} from "./babyjubjub";
 import {decrypt, ElGamal} from "./elgamal";
+import {CasterData} from "./Caster";
 
 type PublicKey = Point;
-type Scope = Array<PublicKey>;
 
 export class Authority {
     pp: PublicParameters;
     keypair: KeyPair;
-    verifiers: Array<PublicKey>;
     voters: Array<PublicKey>;
-    casters: Map<PublicKey, Scope>;
+    casters: Map<number, CasterData>;
 
     constructor(keypair: KeyPair) {
         this.keypair = keypair;
@@ -21,9 +20,8 @@ export class Authority {
             elGamalPPoint: Base8
         };
 
-        this.verifiers = new Array<Point>();
         this.voters = new Array<Point>();
-        this.casters = new Map<PublicKey, Scope>();
+        this.casters = new Map<number, CasterData>();
     }
 
     decrypt(enc: ElGamal): Point {

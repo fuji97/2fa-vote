@@ -1,3 +1,4 @@
+/*
 import {Voter} from "./Voter";
 import {Base8, generateKeypair, scalarToPoint} from "./babyjubjub";
 import {PublicParameters, Vote} from "./types";
@@ -6,16 +7,11 @@ import assert from "assert";
 import {Caster} from "./Caster";
 import {Authority} from "./Authority";
 import {toJson} from "./utils";
-import {encrypt} from "./elgamal";
+import {decrypt, encrypt} from "./elgamal";
 
 const eddsa = require("circomlib").eddsa;
 const mimc = require("circomlib").mimc7;
 const bigInt = require("big-integer");
-
-const pp: PublicParameters = {
-    authorityKey: Base8
-
-};
 
 (async () => {
     try {
@@ -36,11 +32,21 @@ const pp: PublicParameters = {
         const testEncrypt = encrypt(pointVote, authority.pp.authorityKey, caster.lastUsedK);
         const testEncrypt2 = encrypt(pointVote, authority.pp.authorityKey, caster.lastUsedK);
 
+        // Test procedural encryption
         console.log("\nEncrypted ballots comparison:");
-        console.log({C: encryptedBallot.vote.C.toString(), D: encryptedBallot.vote.D.toString()});
-        console.log({C: testEncrypt.C.toString(), D: testEncrypt.D.toString()})
+        console.log("Encrypted ballot from proof:")
+        console.log(toJson(encryptedBallot));
+
+        console.log("Manual encrypted ballot:")
+        console.log(toJson(testEncrypt))
+
         assert(testEncrypt.C.equals(testEncrypt2.C) && testEncrypt.D.equals(testEncrypt2.D), "Not a procedural encryption");
 
+        // Test decryption
+        const testDecrypt = decrypt(testEncrypt, authority.keypair.privateKey);
+        assert(testDecrypt.equals(pointVote), "Encryption/decryption wrong");
+
+        // Test encrypted ballot
         assert(encryptedBallot.vote.C.equals(testEncrypt.C) && encryptedBallot.vote.D.equals(testEncrypt.D), "Encrypted ballots are different");
 
         const decryptedBallot = authority.decrypt(encryptedBallot.vote);
@@ -48,7 +54,7 @@ const pp: PublicParameters = {
         console.log("\nCompare votes:")
         console.log(pointVote.toString());
         console.log(decryptedBallot.toString());
-        assert(decryptedBallot == pointVote, "Encrypted point and decrypted point are different");
+        assert(decryptedBallot.equals(pointVote), "Encrypted point and decrypted point are different");
 
     } catch (e) {
         console.error(e);
@@ -73,4 +79,4 @@ const pp: PublicParameters = {
 //     S: signature.S
 // }
 //
-// assert(eddsa.verifyMiMC(M, { R8: parsedSig.R8.toArray(), S: parsedSig.S }, pointPub.toArray()));
+// assert(eddsa.verifyMiMC(M, { R8: parsedSig.R8.toArray(), S: parsedSig.S }, pointPub.toArray()));*/
