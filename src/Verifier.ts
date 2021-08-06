@@ -1,6 +1,6 @@
 import * as Buffer from "buffer";
 import {PublicParameters, Scope} from "./types";
-import {Ballot, BallotConverter} from "./ballot";
+import {Ballot, BallotConverter, verifyBallot} from "./ballot";
 import * as proof from "./proof";
 import * as ecdsa from "./ecdsa";
 import * as lrs from "./lrs";
@@ -19,25 +19,21 @@ export class Verifier {
         this.ballots = new Map<number, Array<Ballot>>();
     }
 
-    receiveBallot(ballot: Ballot): void {
+    async receiveBallot(ballot: Ballot): Promise<void> {
+        await this.verifyBallotValidity(ballot);
 
+        if (!this.ballots.has(ballot.caster)) {
+            this.ballots.set(ballot.caster, new Array<Ballot>());
+        }
+        this.ballots.get(ballot.caster)!.push(ballot);
     }
 
-    async checkBallotValidity(ballot: Ballot): Promise<void> {
-        const payload = BallotConverter.voteToHexString(ballot);
+    async verifyBallotValidity(ballot: Ballot): Promise<void> {
         const data = this.casters.get(ballot.caster);
-
         assert(data != undefined, "Invalid Caster ID");
 
-        // Check Caster sign
-        await ecdsa.verify(payload, data.publicKey, <ecdsa.Sign>ballot.casterSign);
+        const ballots = this.ballots.get(ballot.caster);
 
-        // Check Voter Linkable Ring Signature
-        lrs.verify(payload, <lrs.LrsSign>ballot.voterSign, data.scope);
-
-
-        // Check proofs
-        const publicSignals = proof.buildCeviPublicInput(ballot.vote, this.pp);
-        await proof.verifyCeviProof(ballot.proof, CeviInputConverter.toArray(publicSignals));
+        await verifyBallot(ballot, data, ballots, this.pp);
     }
 }

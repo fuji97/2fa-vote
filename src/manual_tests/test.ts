@@ -10,6 +10,7 @@ import {decrypt, encrypt} from "../elgamal";
 import {buildCeviPublicInput, CeviInputConverter, verifyCeviProof} from "../proof";
 import {generateLrsKeypair} from "../lrs";
 import * as ecdsa from "../ecdsa";
+import {Verifier} from "../Verifier";
 
 const eddsa = require("../../node_modules/circomlib").eddsa;
 const mimc = require("../../node_modules/circomlib").mimc7;
@@ -18,7 +19,8 @@ const BallotConverter = require("../ballot").BallotConverter;
 
 (async () => {
     try {
-        let authority = new Authority(generateKeypair());
+        const votingOptions: Vote[] = [1n, 2n];
+        let authority = new Authority(generateKeypair(), votingOptions);
 
         const voters = [
             generateLrsKeypair(),
@@ -29,10 +31,15 @@ const BallotConverter = require("../ballot").BallotConverter;
 
         let caster = new Caster(0, ecdsa.generateKeypair(), scope, authority.pp);
 
+        const castersData = new Map<number, CasterData>();
+        castersData.set(caster.id, { publicKey: caster.keypair.publicKey, scope })
+
         let voter = new Voter(voters[0], scope, caster.keypair.publicKey, authority.pp);
 
+        let verifier = new Verifier(castersData, authority.pp);
+
         // Add scope in authority
-        authority.casters.set(caster.id, { publicKey: caster.keypair.publicKey, scope })
+        authority.casters = castersData;
 
         let vote: Vote = 1n;
         let pointVote = scalarToPoint(vote);
@@ -71,6 +78,26 @@ const BallotConverter = require("../ballot").BallotConverter;
         console.log("Ballot signed by Caster");
         await voter.verifyCasterSign(signedBallot);
         console.log("Caster signature OK");
+        caster.castBallot(signedBallot);
+        console.log("Ballot casted");
+
+        // Verifier receiving and verifying ballot
+        console.log("\nVerifier receiving and verifying ballot...");
+        await verifier.receiveBallot(signedBallot);
+        console.log("Verifier OK!");
+
+        // Authority receiving and verifying ballot
+        console.log("\nAuthority receiving and verifying ballot...");
+        await authority.receiveBallot(signedBallot);
+        console.log("Authority OK!");
+
+        // Authority tallying ballots
+        const tally = authority.tally();
+        console.log("Tally complete! Result:");
+        console.log(toJson(tally));
+
+        console.log("Execution ended - All OK!");
+
     } catch (e) {
         //console.error(e);
         throw e;

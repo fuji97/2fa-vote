@@ -31,6 +31,7 @@ export type PublicParameters = {
     authorityKey: Point;
     elGamalBasePoint: Point;
     elGamalPPoint: Point;
+    votingOptions: Array<Vote>;
 }
 
 export type Vote = 1n | 2n;
