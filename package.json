@@ -5,7 +5,10 @@
   "main": "js/main.js",
   "scripts": {
     "generate-snarkjs": "./snarkjs_generate.sh",
-    "test": "jest"
+    "build": "tsc --build",
+    "clean": "tsc --build --clean",
+    "test": "jest",
+    "flow": "node js/manual_tests/test.js"
   },
   "repository": {
     "type": "git",
