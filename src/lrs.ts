@@ -1,23 +1,29 @@
 // @ts-ignore
 import lrs from "lrs";
-import {LrsKeyPair, Scope} from "./types";
+import {Scope} from "./types";
+import crypto from "crypto";
 
-export type LrsSign = string
-
-export function sign(message: string, keypair: LrsKeyPair, scope: Scope) : LrsSign {
-    // TODO Hash message?
-    return lrs.sign(scope, keypair, message);
+export type KeyPair = {
+    publicKey: string;
+    privateKey: string;
 }
 
-export function verify(message: string, sign: LrsSign, scope: Scope): boolean {
-    // TODO Hash message?
-    return lrs.verify(scope, sign, message);
+export type Sign = string
+
+export function sign(message: string, keypair: KeyPair, scope: Scope) : Sign {
+    const hash = crypto.createHash("sha256").update(message).digest();
+    return lrs.sign(scope, keypair, hash);
 }
 
-export function link(sign1: LrsSign, sign2: LrsSign): boolean {
+export function verify(message: string, sign: Sign, scope: Scope): boolean {
+    const hash = crypto.createHash("sha256").update(message).digest();
+    return lrs.verify(scope, sign, hash);
+}
+
+export function link(sign1: Sign, sign2: Sign): boolean {
     return lrs.link(sign1, sign2);
 }
 
-export function generateLrsKeypair(): LrsKeyPair {
+export function generateLrsKeypair(): KeyPair {
     return lrs.gen();
 }

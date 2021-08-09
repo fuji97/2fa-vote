@@ -2,7 +2,7 @@ import {decrypt, encrypt} from "../elgamal";
 import {Base8, randomScalar} from "../babyjubjub";
 import {toJson} from "../utils";
 import assert from "assert";
-import {CesvInput, CeviInput, generateCesvProof, generateCeviProof} from "../proof";
+import {CesvInput, CeviInput, cesv, cevi} from "../proof";
 
 const eddsa = require("../../node_modules/circomlib").eddsa;
 const mimc = require("../../node_modules/circomlib").mimc7;
@@ -38,8 +38,8 @@ const bigInt = require("big-integer");
         }
 
         // Create proof
-        const cevi = await generateCeviProof(ceviInput);
-        console.log(toJson(cevi.publicSignals));
+        const ceviProof = await cevi.generateProof(ceviInput);
+        console.log(toJson(ceviProof.publicSignals));
 
     } catch (e) {
         console.error(e);

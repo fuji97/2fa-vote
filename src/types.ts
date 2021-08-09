@@ -1,31 +1,19 @@
-export type Axis = bigint;
+export type Scalar = bigint;
 
 export interface Point {
-    x: Axis;
-    y: Axis;
+    x: Scalar;
+    y: Scalar;
 
     addPoint(point: Point): Point;
-    mulScalar(scalar: Axis): Point;
+    mulScalar(scalar: Scalar): Point;
     invert(): Point;
     pack(): Buffer;
     toString(): string;
-    toArray(): Array<Axis>;
+    toArray(): Array<Scalar>;
     equals(obj: Point): boolean;
 }
 
 export type Scope = string[];
-
-export type PublicKey = Point;
-
-export type KeyPair = {
-    publicKey: PublicKey;
-    privateKey: Axis;
-}
-
-export type LrsKeyPair = {
-    publicKey: string;
-    privateKey: string;
-}
 
 export type PublicParameters = {
     authorityKey: Point;

@@ -1,4 +1,4 @@
-import {Axis, Point} from "./types";
+import {Scalar, Point} from "./types";
 import randBetween from "big-integer";
 import {Base8, Generator} from "./babyjubjub";
 
@@ -7,7 +7,7 @@ export type ElGamal = {
     D: Point;
 }
 
-export function encrypt(message: Point, pubKey: Point, k: Axis): ElGamal {
+export function encrypt(message: Point, pubKey: Point, k: Scalar): ElGamal {
     const c1 = Base8.mulScalar(k);  // TODO Choose Base8 or Generator
     const c2 = pubKey.mulScalar(k);
     const d = c2.addPoint(message);
@@ -18,7 +18,7 @@ export function encrypt(message: Point, pubKey: Point, k: Axis): ElGamal {
     };
 }
 
-export function decrypt(encrypted: ElGamal, privKey: Axis): Point {
+export function decrypt(encrypted: ElGamal, privKey: Scalar): Point {
     const c1 = encrypted.C.mulScalar(privKey).invert();
 
     return encrypted.D.addPoint(c1);

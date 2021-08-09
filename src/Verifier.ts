@@ -1,12 +1,7 @@
-import * as Buffer from "buffer";
-import {PublicParameters, Scope} from "./types";
-import {Ballot, BallotConverter, verifyBallot} from "./ballot";
-import * as proof from "./proof";
-import * as ecdsa from "./ecdsa";
-import * as lrs from "./lrs";
+import {PublicParameters} from "./types";
+import {Ballot, verifyBallot} from "./ballot";
 import {CasterData} from "./Caster";
 import assert from "assert";
-import {CeviInputConverter} from "./proof";
 
 export class Verifier {
     casters: Map<number, CasterData>;

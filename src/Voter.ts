@@ -1,50 +1,42 @@
-import {KeyPair, PublicParameters, Vote, PublicKey, LrsKeyPair} from "./types";
-import {EddsaSign, generateEddsaKeypair, sign, verify} from "./eddsa";
-import {Point, scalarToPoint} from "./babyjubjub";
+import {PublicParameters, Vote} from "./types";
+import * as eddsa from "./eddsa";
+import * as babyjubjub from "./babyjubjub";
 import assert from "assert";
-// @ts-ignore
 import {EncryptedVote} from "./Caster";
 import * as lrs from "./lrs";
-import {
-    CesvInput,
-    CesvInputConverter,
-    CesvPublicInput, CeviInputConverter,
-    CeviPublicInput,
-    verifyCesvProof,
-    verifyCeviProof
-} from "./proof";
+import { CesvInput,  CesvPublicInput, CeviPublicInput, cesv, cevi} from "./proof";
 import {ElGamal} from "./elgamal";
 import {Ballot, BallotConverter} from "./ballot";
 import * as ecdsa from "./ecdsa";
 
 export type CastedVote = {
     vote: Vote;
-    sign: EddsaSign;
-    pubKey: PublicKey;
+    sign: eddsa.Sign;
+    pubKey: eddsa.PublicKey;
 }
 
 export class Voter {
-    keypair: LrsKeyPair;
+    keypair: lrs.KeyPair;
     publicParameters: PublicParameters;
     scope: Array<string>;
     caster: Buffer; // TDO Change to more clean rappresentation
-    keys: Array<KeyPair>;
+    keys: Array<eddsa.KeyPair>;
 
-    constructor(keypair: LrsKeyPair, scope: Array<string>, caster: Buffer, publicParameters: PublicParameters) {
+    constructor(keypair: lrs.KeyPair, scope: Array<string>, caster: Buffer, publicParameters: PublicParameters) {
         this.keypair = keypair;
         this.caster = caster;
         this.publicParameters = publicParameters;
         this.scope = scope;
 
-        this.keys = new Array<KeyPair>();
+        this.keys = new Array<eddsa.KeyPair>();
     }
 
     castVote(vote: Vote): CastedVote {
-        const pair = generateEddsaKeypair();
-        let sig = sign(vote, pair.privateKey);
+        const pair = eddsa.generateKeypair();
+        let sig = eddsa.sign(vote, pair.privateKey);
 
         // Check signature
-        assert(verify(vote, pair.publicKey, sig), "Invalid EdDSA MiMC-7 signature");
+        assert(eddsa.verify(vote, pair.publicKey, sig), "Invalid EdDSA MiMC-7 signature");
 
         this.keys.push(pair);
 
@@ -56,29 +48,29 @@ export class Voter {
     }
 
     async checkEncryptedBallot(ballot: EncryptedVote) {
-        await verifyCesvProof(ballot.cesv.proof, ballot.cesv.publicSignals);
-        this.checkCesvInput(CesvInputConverter.fromArray(ballot.cesv.publicSignals), ballot.vote);
+        await cesv.verifyProof(ballot.cesv.proof, ballot.cesv.publicSignals);
+        this.checkCesvInput(cesv.fromArray(ballot.cesv.publicSignals), ballot.vote);
 
-        await verifyCeviProof(ballot.cevi.proof, ballot.cevi.publicSignals);
-        this.checkCeviInput(CeviInputConverter.fromArray(ballot.cevi.publicSignals), ballot.vote);
+        await cevi.verifyProof(ballot.cevi.proof, ballot.cevi.publicSignals);
+        this.checkCeviInput(cevi.fromArray(ballot.cevi.publicSignals), ballot.vote);
     }
 
     checkCesvInput(input: CesvPublicInput, ballot: ElGamal): void {
-        assert(Point.fromArray(input.C).equals(ballot.C), "Invalid C");
-        assert(Point.fromArray(input.D).equals(ballot.D), "Invalid D");
-        assert(Point.fromArray(input.P).equals(this.publicParameters.elGamalPPoint), "Invalid P Point");
-        assert(Point.fromArray(input.B).equals(this.publicParameters.elGamalBasePoint), "Invalid Base Point");
-        assert(Point.fromArray(input.Y).equals(this.publicParameters.authorityKey), "Invalid Authority public key");
+        assert(babyjubjub.Point.fromArray(input.C).equals(ballot.C), "Invalid C");
+        assert(babyjubjub.Point.fromArray(input.D).equals(ballot.D), "Invalid D");
+        assert(babyjubjub.Point.fromArray(input.P).equals(this.publicParameters.elGamalPPoint), "Invalid P Point");
+        assert(babyjubjub.Point.fromArray(input.B).equals(this.publicParameters.elGamalBasePoint), "Invalid Base Point");
+        assert(babyjubjub.Point.fromArray(input.Y).equals(this.publicParameters.authorityKey), "Invalid Authority public key");
 
-        assert(this.keys.some(x => Point.fromArray(input.pub).equals(x.publicKey)), "Signing key not found");
+        assert(this.keys.some(x => babyjubjub.Point.fromArray(input.pub).equals(x.publicKey)), "Signing key not found");
     }
 
     checkCeviInput(input: CeviPublicInput, ballot: ElGamal): void {
-        assert(Point.fromArray(input.C).equals(ballot.C), "Invalid C");
-        assert(Point.fromArray(input.D).equals(ballot.D), "Invalid D");
-        assert(Point.fromArray(input.P).equals(this.publicParameters.elGamalPPoint), "Invalid P Point");
-        assert(Point.fromArray(input.B).equals(this.publicParameters.elGamalBasePoint), "Invalid Base Point");
-        assert(Point.fromArray(input.Y).equals(this.publicParameters.authorityKey), "Invalid Authority public key");
+        assert(babyjubjub.Point.fromArray(input.C).equals(ballot.C), "Invalid C");
+        assert(babyjubjub.Point.fromArray(input.D).equals(ballot.D), "Invalid D");
+        assert(babyjubjub.Point.fromArray(input.P).equals(this.publicParameters.elGamalPPoint), "Invalid P Point");
+        assert(babyjubjub.Point.fromArray(input.B).equals(this.publicParameters.elGamalBasePoint), "Invalid Base Point");
+        assert(babyjubjub.Point.fromArray(input.Y).equals(this.publicParameters.authorityKey), "Invalid Authority public key");
     }
 
     signBallot(ballot: Ballot): Ballot {

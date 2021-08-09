@@ -1,26 +1,24 @@
 import {Voter} from "../Voter";
-import {Base8, generateKeypair, scalarToPoint} from "../babyjubjub";
+import * as babyjubjub from "../babyjubjub";
 import {PublicParameters, Vote} from "../types";
-import {generateEddsaKeypair} from "../eddsa";
+import * as eddsa from "../eddsa";
 import assert from "assert";
 import {Caster, CasterData} from "../Caster";
 import {Authority} from "../Authority";
 import {toJson} from "../utils";
 import {decrypt, encrypt} from "../elgamal";
-import {buildCeviPublicInput, CeviInputConverter, verifyCeviProof} from "../proof";
+import {cevi, cesv} from "../proof";
 import {generateLrsKeypair} from "../lrs";
 import * as ecdsa from "../ecdsa";
 import {Verifier} from "../Verifier";
 
-const eddsa = require("../../node_modules/circomlib").eddsa;
-const mimc = require("../../node_modules/circomlib").mimc7;
 const bigInt = require("big-integer");
-const BallotConverter = require("../ballot").BallotConverter;
+import {BallotConverter} from "../ballot";
 
 (async () => {
     try {
         const votingOptions: Vote[] = [1n, 2n];
-        let authority = new Authority(generateKeypair(), votingOptions);
+        let authority = new Authority(babyjubjub.generateKeypair(), votingOptions);
 
         const voters = [
             generateLrsKeypair(),
@@ -42,7 +40,7 @@ const BallotConverter = require("../ballot").BallotConverter;
         authority.casters = castersData;
 
         let vote: Vote = 1n;
-        let pointVote = scalarToPoint(vote);
+        let pointVote = babyjubjub.scalarToPoint(vote);
 
         // VOTER: Casting ballot
         console.log("Voter creating and signing vote...")
@@ -64,10 +62,10 @@ const BallotConverter = require("../ballot").BallotConverter;
         const strBallot = BallotConverter.voteToHexString(signedBallot);
         console.log(strBallot);
 
-        const rebuiltBallot = BallotConverter.fromString(strBallot, signedBallot.proof.publicSignals);
+        const rebuiltBallot = BallotConverter.fromString(strBallot, caster.id);
         console.log(toJson(rebuiltBallot))
-        const publicSignals = buildCeviPublicInput(rebuiltBallot.vote, authority.pp);
-        await verifyCeviProof(rebuiltBallot.proof, CeviInputConverter.toArray(publicSignals));
+        const publicSignals = cevi.buildPublicInput(rebuiltBallot.vote, authority.pp);
+        await cevi.verifyProof(rebuiltBallot.proof, cevi.toArray(publicSignals));
         console.log("Proof OK!")
 
         signedBallot = voter.signBallot(signedBallot);
@@ -94,7 +92,7 @@ const BallotConverter = require("../ballot").BallotConverter;
         // Authority tallying ballots
         const tally = authority.tally();
         console.log("Tally complete! Result:");
-        console.log(toJson(tally));
+        console.log(toJson(Object.fromEntries(tally)));
 
         console.log("Execution ended - All OK!");
 

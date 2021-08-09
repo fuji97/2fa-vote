@@ -1,55 +1,52 @@
-import {KeyPair, PublicParameters, Axis, Scope, Vote} from "./types";
-import {Point} from "./types";
-import {Base8} from "./babyjubjub";
-import {decrypt, ElGamal} from "./elgamal";
+import {PublicParameters, Vote, Point} from "./types";
 import {CasterData} from "./Caster";
-import {Ballot, verifyBallot} from "./ballot";
-import assert from "assert";
 import {firstFromMap} from "./utils";
-
-type PublicKey = Point;
+import * as babyjubjub from "./babyjubjub";
+import * as elgamal from "./elgamal";
+import * as ballots from "./ballot";
+import assert from "assert";
 
 export class Authority {
     pp: PublicParameters;
-    keypair: KeyPair;
-    voters: Array<PublicKey>;
+    keypair: babyjubjub.KeyPair;
+    voters: Array<babyjubjub.PublicKey>;
     casters: Map<number, CasterData>;
-    ballots: Map<number, Array<Ballot>>;
+    ballots: Map<number, Array<ballots.Ballot>>;
 
-    constructor(keypair: KeyPair, votingOptions: Vote[]) {
+    constructor(keypair: babyjubjub.KeyPair, votingOptions: Vote[]) {
         this.keypair = keypair;
         this.pp = {
             authorityKey: this.keypair.publicKey,
-            elGamalBasePoint: Base8,
-            elGamalPPoint: Base8,
+            elGamalBasePoint: babyjubjub.Base8,
+            elGamalPPoint: babyjubjub.Base8,
             votingOptions: votingOptions
         };
 
-        this.voters = new Array<Point>();
+        this.voters = new Array<babyjubjub.PublicKey>();
         this.casters = new Map<number, CasterData>();
-        this.ballots = new Map<number, Array<Ballot>>();
+        this.ballots = new Map<number, Array<ballots.Ballot>>();
     }
 
-    private decrypt(enc: ElGamal): Point {
-        return decrypt(enc, this.keypair.privateKey);
+    private decrypt(enc: elgamal.ElGamal): Point {
+        return elgamal.decrypt(enc, this.keypair.privateKey);
     }
 
-    async receiveBallot(ballot: Ballot): Promise<void> {
+    async receiveBallot(ballot: ballots.Ballot): Promise<void> {
         await this.verifyBallot(ballot);
 
         if (!this.ballots.has(ballot.caster)) {
-            this.ballots.set(ballot.caster, new Array<Ballot>());
+            this.ballots.set(ballot.caster, new Array<ballots.Ballot>());
         }
         this.ballots.get(ballot.caster)!.push(ballot);
     }
 
-    private async verifyBallot(ballot: Ballot): Promise<void> {
+    private async verifyBallot(ballot: ballots.Ballot): Promise<void> {
         const data = this.casters.get(ballot.caster);
         assert(data != undefined, "Invalid Caster ID");
 
-        const ballots = this.ballots.get(ballot.caster);
+        const scopedBallots = this.ballots.get(ballot.caster);
 
-        await verifyBallot(ballot, data, ballots, this.pp);
+        await ballots.verifyBallot(ballot, data, scopedBallots, this.pp);
     }
 
     tally(): Map<Vote, number> {
@@ -77,7 +74,7 @@ export class Authority {
         const pointMap = new Map<Point, Vote>();
 
         for (const option of this.pp.votingOptions) {
-            pointMap.set(Base8.mulScalar(option), option);
+            pointMap.set(babyjubjub.Base8.mulScalar(option), option);
         }
 
         return pointMap;

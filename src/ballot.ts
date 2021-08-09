@@ -1,6 +1,5 @@
-import {Point, PublicParameters} from "./types";
-import {CeviInput, CeviInputConverter, Proof, ProofSignals} from "./proof";
-import {LrsSign} from "./lrs";
+import {PublicParameters} from "./types";
+import {cevi, Proof} from "./proof";
 import {CasterData, EncryptedVote} from "./Caster";
 import {bigintToBuf, bufToBigint, TypedArray} from "bigint-conversion";
 import assert from "assert";
@@ -8,13 +7,12 @@ import {ElGamal} from "./elgamal";
 import * as babyjub from "./babyjubjub";
 import * as ecdsa from "./ecdsa";
 import * as lrs from "./lrs";
-import * as proof from "./proof";
 
 export type Ballot = {
     vote: ElGamal,
     proof: Proof,
     caster: number,
-    voterSign?: LrsSign;
+    voterSign?: lrs.Sign;
     casterSign?: ecdsa.Sign;
 };
 
@@ -104,7 +102,7 @@ export async function verifyBallot(ballot: Ballot, casterData: CasterData, scope
     await ecdsa.verify(payload, casterData.publicKey, <ecdsa.Sign>ballot.casterSign);
 
     // Check Voter Linkable Ring Signature
-    lrs.verify(payload, <lrs.LrsSign>ballot.voterSign, casterData.scope);
+    lrs.verify(payload, <lrs.Sign>ballot.voterSign, casterData.scope);
     if (scopedBallots != undefined) {
         for (const scopeBallot of scopedBallots) {
             assert(!lrs.link(ballot.voterSign!, scopeBallot.voterSign!), "Double signature found");
@@ -112,7 +110,7 @@ export async function verifyBallot(ballot: Ballot, casterData: CasterData, scope
     }
 
     // Check proofs
-    const publicSignals = proof.buildCeviPublicInput(ballot.vote, pp);
-    assert(await proof.verifyCeviProof(ballot.proof, CeviInputConverter.toArray(publicSignals)),
+    const publicSignals = cevi.buildPublicInput(ballot.vote, pp);
+    assert(await cevi.verifyProof(ballot.proof, cevi.toArray(publicSignals)),
         "Invalid CEVI proof");
 }

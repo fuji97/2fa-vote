@@ -1,14 +1,16 @@
-import {EddsaSign} from "./eddsa";
-import {Point, Axis, PublicParameters, PublicKey} from "./types";
+import {Scalar, PublicParameters} from "./types";
 import {ElGamal} from "./elgamal";
-const snarkjs = require("snarkjs");
+// @ts-ignore
+import * as snarkjs from "snarkjs";
+import * as eddsa from "./eddsa";
+import * as babyjubjub from "./babyjubjub";
 
 type VerificationKey = any
 
 type ProofInput = {
     wasm: string;
     zkey: string;
-    verificationKey: VerificationKey
+    verificationKey: VerificationKey;
 }
 
 const CESV_CIRCUIT: ProofInput = {
@@ -23,34 +25,29 @@ const CEVI_CIRCUIT: ProofInput = {
     verificationKey: require("../out/correct_encrypt_valid_input/verification_key.json") as VerificationKey
 }
 
-export type SignedVote = {
-    vote: number;
-    sign: EddsaSign
-}
-
 type ElGamalPublicInput = {
-    P: Array<Axis>;
-    B: Array<Axis>;
-    Y: Array<Axis>;
+    P: Array<Scalar>;
+    B: Array<Scalar>;
+    Y: Array<Scalar>;
 }
 
 type ElGamalInput = ElGamalPublicInput & {
-    m: Axis;
-    k: Axis;
+    m: Scalar;
+    k: Scalar;
 }
 
 type EddsaPublicInput = {
-    pub: Array<Axis>
+    pub: Array<Scalar>
 }
 
 type EddsaInput = EddsaPublicInput & {
-    s: Axis,
-    R8: Array<Axis>
+    s: Scalar,
+    R8: Array<Scalar>
 }
 
 type Output = {
-    C: Array<Axis>;
-    D: Array<Axis>;
+    C: Array<Scalar>;
+    D: Array<Scalar>;
 }
 
 export type CesvPublicInput = ElGamalPublicInput & EddsaPublicInput & Output
@@ -72,39 +69,17 @@ export type ProofSignals = {
     publicSignals: Array<string>;
 }
 
-// class ProofPublicDataLoader {
-//     private static _cesvVerKey: VerificationKey;
-//     private static _ceviVerKey: VerificationKey;
-//
-//     get cesvVerKey {
-//         if (ProofPublicDataLoader._cesvVerKey == null) {
-//
-//         }
-//     }
-//
-//
-// }
+export const cesv = {
+    generateProof: async function(input: CesvInput): Promise<ProofSignals> {
+        const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CESV_CIRCUIT.wasm, CESV_CIRCUIT.zkey);
+        return { proof, publicSignals };
+    },
 
-export async function generateCesvProof(input: CesvInput): Promise<ProofSignals> {
-    const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CESV_CIRCUIT.wasm, CESV_CIRCUIT.zkey);
-    return { proof, publicSignals };
-}
+    verifyProof: async function(proof: Proof, publicSignals: Array<string>): Promise<boolean> {
+        return await snarkjs.groth16.verify(CESV_CIRCUIT.verificationKey, publicSignals, proof);
+    },
 
-export async function generateCeviProof(input: CeviInput): Promise<ProofSignals> {
-    const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CEVI_CIRCUIT.wasm, CEVI_CIRCUIT.zkey);
-    return { proof, publicSignals };
-}
-
-export async function verifyCesvProof(proof: Proof, publicSignals: Array<string>): Promise<boolean> {
-    return await snarkjs.groth16.verify(CESV_CIRCUIT.verificationKey, publicSignals, proof);
-}
-
-export async function verifyCeviProof(proof: Proof, publicSignals: Array<string>): Promise<boolean> {
-    return await snarkjs.groth16.verify(CEVI_CIRCUIT.verificationKey, publicSignals, proof);
-}
-
-export class CesvInputConverter {
-    static fromArray(arr: Array<string>): CesvPublicInput {
+    fromArray: function(arr: Array<string>): CesvPublicInput {
         const intArr = arr.map(x => BigInt(x));
         return {
             C: intArr.slice(0, 2),
@@ -114,9 +89,9 @@ export class CesvInputConverter {
             Y: intArr.slice(8, 10),
             pub: intArr.slice(10, 12)
         }
-    }
+    },
 
-    static toArray(input: CesvPublicInput): Array<string> {
+    toArray: function(input: CesvPublicInput): Array<string> {
         const arr = [
             ...input.C,
             ...input.D,
@@ -126,11 +101,31 @@ export class CesvInputConverter {
             ...input.pub,
         ];
         return arr.map(x => x.toString());
+    },
+
+    buildPublicInput: function(vote: ElGamal, pp: PublicParameters, pubKey: babyjubjub.PublicKey): CesvPublicInput {
+        return {
+            C: vote.C.toArray(),
+            D: vote.D.toArray(),
+            P: pp.elGamalPPoint.toArray(),
+            B: pp.elGamalBasePoint.toArray(),
+            Y: pp.authorityKey.toArray(),
+            pub: pubKey.toArray()
+        }
     }
 }
 
-export class CeviInputConverter {
-    static fromArray(arr: Array<string>): CeviPublicInput {
+export const cevi = {
+    generateProof: async function(input: CeviInput): Promise<ProofSignals> {
+        const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CEVI_CIRCUIT.wasm, CEVI_CIRCUIT.zkey);
+        return { proof, publicSignals };
+    },
+
+    verifyProof: async function(proof: Proof, publicSignals: Array<string>): Promise<boolean> {
+        return await snarkjs.groth16.verify(CEVI_CIRCUIT.verificationKey, publicSignals, proof);
+    },
+
+    fromArray: function(arr: Array<string>): CeviPublicInput {
         const intArr = arr.map(x => BigInt(x));
         return {
             C: intArr.slice(0, 2),
@@ -139,9 +134,9 @@ export class CeviInputConverter {
             B: intArr.slice(6, 8),
             Y: intArr.slice(8, 10),
         }
-    }
+    },
 
-    static toArray(input: CeviPublicInput): Array<string> {
+    toArray: function(input: CeviPublicInput): Array<string> {
         const arr = [
             ...input.C,
             ...input.D,
@@ -150,26 +145,15 @@ export class CeviInputConverter {
             ...input.Y,
         ];
         return arr.map(x => x.toString());
-    }
-}
+    },
 
-export function buildCeviPublicInput(vote: ElGamal, pp: PublicParameters): CeviPublicInput {
-    return {
-        C: vote.C.toArray(),
-        D: vote.D.toArray(),
-        P: pp.elGamalPPoint.toArray(),
-        B: pp.elGamalBasePoint.toArray(),
-        Y: pp.authorityKey.toArray()
-    }
-}
-
-export function buildCesvPublicInput(vote: ElGamal, pp: PublicParameters, pubKey: PublicKey): CesvPublicInput {
-    return {
-        C: vote.C.toArray(),
-        D: vote.D.toArray(),
-        P: pp.elGamalPPoint.toArray(),
-        B: pp.elGamalBasePoint.toArray(),
-        Y: pp.authorityKey.toArray(),
-        pub: pubKey.toArray()
+    buildPublicInput: function(vote: ElGamal, pp: PublicParameters): CeviPublicInput {
+        return {
+            C: vote.C.toArray(),
+            D: vote.D.toArray(),
+            P: pp.elGamalPPoint.toArray(),
+            B: pp.elGamalBasePoint.toArray(),
+            Y: pp.authorityKey.toArray()
+        }
     }
 }
