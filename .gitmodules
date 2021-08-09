@@ -1,7 +1,4 @@
 [submodule "circomlib"]
 	path = circomlib
-	url = https://github.com/iden3/circomlib
+	url = https://github.com/iden3/circomlib.git
 	branch = master
-[submodule "lrs-ecdsa"]
-	path = lrs-ecdsa
-	url = https://gitlab.com/vocdoni/lrs-ecdsa.git
