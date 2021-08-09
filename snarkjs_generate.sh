@@ -16,17 +16,18 @@ compile_circuit() {
   snarkjs r1cs info "$3/circuit.r1cs"
   echo ""
 
+  input=$(tr -dc A-Za-z0-9 </dev/urandom | head -c 24 ; echo '')
   echo "Creating keys..."
   snarkjs zkey new "$3/circuit.r1cs" "$2" "$3/circuit_0000.zkey"
-  snarkjs zkey contribute "$3/circuit_0000.zkey" "$3/circuit.zkey"
+  echo "Using entropy $input"
+  snarkjs zkey contribute "$3/circuit_0000.zkey" "$3/circuit.zkey" -e="$input"
   snarkjs zkey export verificationkey "$3/circuit.zkey" "$3/verification_key.json"
   echo ""
   echo "Keys created!"
 }
 
 echo "This script will compile the correct_encrypt_signed_vote and correct_encrypt_valid_input circuits and generate
-the corresponding keys fron the Power of Tao ceremony specified."
-echo "When generating keys an input will be requested to simulate entropy."
+the corresponding keys from the Power of Tao ceremony specified."
 echo ""
 
 mkdir -p $CESV_OUT
