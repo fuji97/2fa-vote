@@ -24,7 +24,6 @@
     "elliptic": "^6.5.4",
     "ffjavascript": "^0.2.38",
     "lrs": "^0.1.5",
-    "lrs-ecdsa": "file:lrs-ecdsa",
     "snarkjs": "^0.4.6"
   },
   "devDependencies": {
