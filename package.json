@@ -4,6 +4,7 @@
   "description": "2-Factor Authentication Voting System - Proof of Concept",
   "main": "js/main.js",
   "scripts": {
+    "generate-snarkjs": "./snarkjs_generate.sh",
     "test": "jest"
   },
   "repository": {
