@@ -8,7 +8,7 @@ import {Authority} from "../Authority";
 import {toJson} from "../utils";
 import {decrypt, encrypt} from "../elgamal";
 import {cevi, cesv} from "../proof";
-import {generateLrsKeypair} from "../lrs";
+import {generateKeypair} from "../lrs";
 import * as ecdsa from "../ecdsa";
 import {Verifier} from "../Verifier";
 
@@ -21,9 +21,9 @@ import {BallotConverter} from "../ballot";
         let authority = new Authority(babyjubjub.generateKeypair(), votingOptions);
 
         const voters = [
-            generateLrsKeypair(),
-            generateLrsKeypair(),
-            generateLrsKeypair()
+            generateKeypair(),
+            generateKeypair(),
+            generateKeypair()
         ];
         const scope = voters.map(x => x.publicKey);
 

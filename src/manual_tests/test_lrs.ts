@@ -1,4 +1,4 @@
-import {generateLrsKeypair} from "../lrs";
+import {generateKeypair} from "../lrs";
 import * as lrs from "../lrs";
 import assert from "assert";
 
@@ -6,9 +6,9 @@ import assert from "assert";
     try {
 
         const voters = [
-            generateLrsKeypair(),
-            generateLrsKeypair(),
-            generateLrsKeypair()
+            generateKeypair(),
+            generateKeypair(),
+            generateKeypair()
         ];
         const scope = voters.map(x => x.publicKey);
 

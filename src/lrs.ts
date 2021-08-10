@@ -24,6 +24,6 @@ export function link(sign1: Sign, sign2: Sign): boolean {
     return lrs.link(sign1, sign2);
 }
 
-export function generateLrsKeypair(): KeyPair {
+export function generateKeypair(): KeyPair {
     return lrs.gen();
 }
