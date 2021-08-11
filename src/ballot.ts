@@ -99,7 +99,8 @@ export async function verifyBallot(ballot: Ballot, casterData: CasterData, scope
     const payload = BallotConverter.voteToHexString(ballot);
 
     // Check Caster sign
-    await ecdsa.verify(payload, casterData.publicKey, <ecdsa.Sign>ballot.casterSign);
+    //const verifySign = ;
+    assert(await ecdsa.verify(payload, casterData.publicKey, <ecdsa.Sign>ballot.casterSign), "Invalid Caster signature");
 
     // Check Voter Linkable Ring Signature
     lrs.verify(payload, <lrs.Sign>ballot.voterSign, casterData.scope);

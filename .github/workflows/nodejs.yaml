@@ -27,5 +27,3 @@ jobs:
         run: npm run generate-snarkjs
       - name: Run unit tests
         run: npm test
-      - name: Run test flow
-        run: npm run flow

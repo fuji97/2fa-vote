@@ -8,7 +8,7 @@ export function firstFromMap<T1,T2>(map: Map<T1,T2>, filter: (key: T1, val: T2) 
         if (filter(elem[0], elem[1])) {
             return elem[1];
         }
-
-        return undefined;
     }
+
+    return undefined;
 }

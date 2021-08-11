@@ -5,7 +5,7 @@ import * as types from "./types";
 import {Scalar} from "ffjavascript";
 import assert from "assert";
 
-export type PublicKey = Point;
+export type PublicKey = types.Point;
 
 export type KeyPair = {
     publicKey: PublicKey;

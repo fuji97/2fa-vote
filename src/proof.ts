@@ -71,7 +71,8 @@ export type ProofSignals = {
 
 export const cesv = {
     generateProof: async function(input: CesvInput): Promise<ProofSignals> {
-        const { proof, publicSignals } = await snarkjs.groth16.fullProve(input, CESV_CIRCUIT.wasm, CESV_CIRCUIT.zkey);
+        const res = snarkjs.groth16.fullProve(input, CESV_CIRCUIT.wasm, CESV_CIRCUIT.zkey);
+        const { proof, publicSignals } = await res;
         return { proof, publicSignals };
     },
 

@@ -24,8 +24,14 @@ export async function sign(msg: string, privKey: Buffer): Promise<Sign> {
     return sign.toString('hex');
 }
 
-export async function verify(msg: string, pubKey: Buffer, sig: Sign): Promise<void> {
+export async function verify(msg: string, pubKey: Buffer, sig: Sign): Promise<boolean> {
     const hash = crypto.createHash("sha256").update(msg).digest();
 
-    await eccrypto.verify(pubKey, hash, Buffer.from(sig, 'hex'));
+    try {
+        await eccrypto.verify(pubKey, hash, Buffer.from(sig, 'hex'));
+    } catch (Error) {
+        return false;
+    }
+
+    return true;
 }
