@@ -63,7 +63,7 @@ describe("Test Zero Knowledge Proofs", () => {
             cevi: ceviProof,
             vote: cesv.extractVote(cesv.fromArray(cesvProof.publicSignals))
         };
-    });
+    }, 30000);
 
     test("Compare encrypted votes", () => {
         const cesvVote = cesv.extractVote(cesv.fromArray(ballot.cesv.publicSignals));
