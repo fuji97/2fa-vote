@@ -20,13 +20,15 @@ This will run the shell script `snarkjs_generate.sh` that will generate all the 
 
 Insert random text as Entropy when required (two times).
 
-3. Run default flow
-```shell
-npm run flow
-```
-This will simulate a standard flow with vote generation, encryption, proofs verification and tallying.
-4. Run tests
+3. Run tests
 ```shell
 npm test
 ```
-This will run all the unit tests in the project.
+This will run all the unit tests in the project, including the integration test simulating the entire flow of the system.
+
+2. Run default flow
+```shell
+npm run flow
+```
+This will simulate a standard flow with vote generation, encryption, proofs verification and tallying. 
+Console logs will show all the steps performed with corresponding outputs.

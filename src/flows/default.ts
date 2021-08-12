@@ -14,11 +14,50 @@ import {Verifier} from "../Verifier";
 
 const bigInt = require("big-integer");
 import {BallotConverter} from "../ballot";
+import winston from "winston";
 
 (async () => {
     try {
+        const levels = {
+            error: 0,
+            warn: 1,
+            info: 2,
+            verbose: 3,
+        };
+
+        const colors = {
+            error: 'red',
+            warn: 'yellow',
+            info: 'green',
+            verbose: 'blue',
+        };
+
+        winston.addColors(colors);
+
+        const transports = [
+            // Allow the use the console to print the messages
+            new winston.transports.Console()
+        ];
+
+        const format = winston.format.combine(
+            // Add the message timestamp with the preferred format
+            // Tell Winston that the logs must be colored
+            winston.format.colorize({ level: true }),
+            // Define the format of the message showing the timestamp, the level and the message
+            winston.format.printf(
+                (info) => `[${info.level}] ${info.message}`,
+            )
+        );
+
+        const logger = winston.createLogger({
+            level: 'verbose',
+            levels,
+            transports,
+            format
+        });
+
         const votingOptions: Vote[] = [1n, 2n];
-        let authority = new Authority(babyjubjub.generateKeypair(), votingOptions);
+        let authority = new Authority(babyjubjub.generateKeypair(), votingOptions, logger);
 
         const voters = [
             generateKeypair(),
@@ -27,14 +66,14 @@ import {BallotConverter} from "../ballot";
         ];
         const scope = voters.map(x => x.publicKey);
 
-        let caster = new Caster(0, ecdsa.generateKeypair(), scope, authority.pp);
+        let caster = new Caster(0, ecdsa.generateKeypair(), scope, authority.pp, logger);
 
         const castersData = new Map<number, CasterData>();
         castersData.set(caster.id, { publicKey: caster.keypair.publicKey, scope })
 
-        let voter = new Voter(voters[0], scope, caster.keypair.publicKey, authority.pp);
+        let voter = new Voter(voters[0], scope, caster.keypair.publicKey, authority.pp, logger);
 
-        let verifier = new Verifier(castersData, authority.pp);
+        let verifier = new Verifier(castersData, authority.pp, logger);
 
         // Add scope in authority
         authority.casters = castersData;
@@ -43,58 +82,58 @@ import {BallotConverter} from "../ballot";
         let pointVote = babyjubjub.scalarToPoint(vote);
 
         // VOTER: Casting ballot
-        console.log("Voter creating and signing vote...")
+        logger.info("Voter creating and signing vote...")
         const ballot = voter.castVote(vote);
-        console.log("Ballot:")
-        console.log(toJson(vote));
+        logger.info("Ballot:")
+        logger.info(toJson(vote));
 
         // CASTER: Checking and encrypting ballot
-        console.log("\nCaster encrypting and generating proofs...")
+        logger.info("Caster encrypting and generating proofs...")
         const encryptedBallot = await caster.encryptVote(ballot.vote, ballot.pubKey, ballot.sign);
-        console.log("Encrypted Ballot:")
-        console.log(toJson(encryptedBallot));
+        logger.info("Encrypted Ballot:")
+        logger.info(toJson(encryptedBallot));
 
         // VOTER: Checking and signing ballot
-        console.log("\nVoter checking and signing encrypted ballot...");
+        logger.info("Voter checking and signing encrypted ballot...");
         await voter.checkEncryptedBallot(encryptedBallot);
-        console.log("Encrypted Ballot OK!")
+        logger.info("Encrypted Ballot OK!")
         let signedBallot = BallotConverter.fromEncryptedVote(encryptedBallot);
         const strBallot = BallotConverter.voteToHexString(signedBallot);
-        console.log(strBallot);
+        logger.info(strBallot);
 
         const rebuiltBallot = BallotConverter.fromString(strBallot, caster.id);
-        console.log(toJson(rebuiltBallot))
+        logger.info(toJson(rebuiltBallot))
         const publicSignals = cevi.buildPublicInput(rebuiltBallot.vote, authority.pp);
         await cevi.verifyProof(rebuiltBallot.proof, cevi.toArray(publicSignals));
-        console.log("Proof OK!")
+        logger.info("Proof OK!")
 
         signedBallot = voter.signBallot(signedBallot);
-        console.log("Ballot signed by Voter");
+        logger.info("Ballot signed by Voter");
         caster.verifyVoterSign(signedBallot);
-        console.log("Voter LRS OK!");
+        logger.info("Voter LRS OK!");
         signedBallot = await caster.signBallot(signedBallot);
-        console.log("Ballot signed by Caster");
+        logger.info("Ballot signed by Caster");
         await voter.verifyCasterSign(signedBallot);
-        console.log("Caster signature OK");
+        logger.info("Caster signature OK");
         caster.castBallot(signedBallot);
-        console.log("Ballot casted");
+        logger.info("Ballot casted");
 
         // Verifier receiving and verifying ballot
-        console.log("\nVerifier receiving and verifying ballot...");
+        logger.info("Verifier receiving and verifying ballot...");
         await verifier.receiveBallot(signedBallot);
-        console.log("Verifier OK!");
+        logger.info("Verifier OK!");
 
         // Authority receiving and verifying ballot
-        console.log("\nAuthority receiving and verifying ballot...");
+        logger.info("Authority receiving and verifying ballot...");
         await authority.receiveBallot(signedBallot);
-        console.log("Authority OK!");
+        logger.info("Authority OK!");
 
         // Authority tallying ballots
         const tally = authority.tally();
-        console.log("Tally complete! Result:");
-        console.log(toJson(Object.fromEntries(tally)));
+        logger.info("Tally complete! Result:");
+        logger.info(toJson(Object.fromEntries(tally)));
 
-        console.log("Execution ended - All OK!");
+        logger.info("Execution ended - All OK!");
 
     } catch (e) {
         //console.error(e);

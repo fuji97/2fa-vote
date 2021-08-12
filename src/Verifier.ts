@@ -1,5 +1,5 @@
 import {PublicParameters} from "./types";
-import {Ballot, verifyBallot} from "./ballot";
+import {Ballot, BallotConverter, verifyBallot} from "./ballot";
 import {CasterData} from "./Caster";
 import assert from "assert";
 
@@ -8,13 +8,17 @@ export class Verifier {
     pp: PublicParameters;
     ballots: Map<number, Array<Ballot>>;
 
-    constructor(casters: Map<number, CasterData>, pp: PublicParameters) {
+    logger: any;
+
+    constructor(casters: Map<number, CasterData>, pp: PublicParameters, logger?: any) {
         this.casters = casters;
         this.pp = pp;
         this.ballots = new Map<number, Array<Ballot>>();
+        this.logger = logger;
     }
 
     async receiveBallot(ballot: Ballot): Promise<void> {
+        this.logger?.verbose(`Receiving ballot ${BallotConverter.toShortString(ballot)}`);
         await this.verifyBallotValidity(ballot);
 
         if (!this.ballots.has(ballot.caster)) {
@@ -24,11 +28,13 @@ export class Verifier {
     }
 
     async verifyBallotValidity(ballot: Ballot): Promise<void> {
+        this.logger?.verbose(`Verifying ballot ${BallotConverter.toShortString(ballot)}`);
         const data = this.casters.get(ballot.caster);
         assert(data != undefined, "Invalid Caster ID");
 
         const ballots = this.ballots.get(ballot.caster);
 
         await verifyBallot(ballot, data, ballots, this.pp);
+        this.logger?.verbose(`Ballot OK`);
     }
 }

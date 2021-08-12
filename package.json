@@ -8,7 +8,7 @@
     "build": "tsc --build",
     "clean": "tsc --build --clean",
     "test": "jest --forceExit",
-    "flow": "node js/manual_tests/test.js"
+    "flow": "node js/flows/default.js"
   },
   "repository": {
     "type": "git",
@@ -28,7 +28,8 @@
     "elliptic": "^6.5.4",
     "ffjavascript": "^0.2.38",
     "lrs": "^0.1.5",
-    "snarkjs": "^0.4.6"
+    "snarkjs": "^0.4.6",
+    "winston": "^3.3.3"
   },
   "devDependencies": {
     "@tsconfig/node14": "^1.0.1",

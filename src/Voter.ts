@@ -8,6 +8,7 @@ import { CesvInput,  CesvPublicInput, CeviPublicInput, cesv, cevi} from "./proof
 import {ElGamal} from "./elgamal";
 import {Ballot, BallotConverter} from "./ballot";
 import * as ecdsa from "./ecdsa";
+import {toJson} from "./utils";
 
 export type CastedVote = {
     vote: Vote;
@@ -22,16 +23,21 @@ export class Voter {
     caster: Buffer; // TDO Change to more clean rappresentation
     keys: Array<eddsa.KeyPair>;
 
-    constructor(keypair: lrs.KeyPair, scope: Array<string>, caster: Buffer, publicParameters: PublicParameters) {
+    logger: any;
+
+    constructor(keypair: lrs.KeyPair, scope: Array<string>, caster: Buffer, publicParameters: PublicParameters, logger?: any) {
         this.keypair = keypair;
         this.caster = caster;
         this.publicParameters = publicParameters;
         this.scope = scope;
+        this.logger = logger;
 
         this.keys = new Array<eddsa.KeyPair>();
     }
 
     castVote(vote: Vote): CastedVote {
+        this.logger?.verbose(`Casting vote ${vote}`);
+
         const pair = eddsa.generateKeypair();
         let sig = eddsa.sign(vote, pair.privateKey);
 
@@ -40,19 +46,27 @@ export class Voter {
 
         this.keys.push(pair);
 
-        return {
+        const castedVote = {
             vote,
             sign: sig,
             pubKey: pair.publicKey
-        }
+        };
+        this.logger?.verbose(`Vote casted:\n${toJson(castedVote)}`);
+
+        return castedVote;
     }
 
     async checkEncryptedBallot(ballot: EncryptedVote) {
+        this.logger?.verbose(`Verifying encrypted vote`);
         await cesv.verifyProof(ballot.cesv.proof, ballot.cesv.publicSignals);
+        this.logger?.verbose(`CESV Proof OK`);
         this.checkCesvInput(cesv.fromArray(ballot.cesv.publicSignals), ballot.vote);
+        this.logger?.verbose(`CESV Input signals OK`);
 
         await cevi.verifyProof(ballot.cevi.proof, ballot.cevi.publicSignals);
+        this.logger?.verbose(`CEVI Proof OK`);
         this.checkCeviInput(cevi.fromArray(ballot.cevi.publicSignals), ballot.vote);
+        this.logger?.verbose(`CEVI Input signals OK`);
     }
 
     checkCesvInput(input: CesvPublicInput, ballot: ElGamal): void {
@@ -74,15 +88,20 @@ export class Voter {
     }
 
     signBallot(ballot: Ballot): Ballot {
+        this.logger?.verbose(`Signing ballot ${BallotConverter.toShortString(ballot)}`);
         const voteStr = BallotConverter.voteToHexString(ballot);
         ballot.voterSign = lrs.sign(voteStr, this.keypair, this.scope);
 
         assert(lrs.verify(voteStr, ballot.voterSign, this.scope), "Invalid Linkable Ring Signature");
 
+        this.logger?.verbose(`Sign: ${ballot.voterSign}`);
+
         return ballot;
     }
 
     async verifyCasterSign(ballot: Ballot): Promise<void> {
-        await ecdsa.verify(BallotConverter.voteToHexString(ballot), this.caster, <ecdsa.Sign>ballot.casterSign);
+        this.logger?.verbose(`Verifying caster sign of ballot ${BallotConverter.toShortString(ballot)}`);
+        assert(await ecdsa.verify(BallotConverter.voteToHexString(ballot), this.caster, <ecdsa.Sign>ballot.casterSign), "Invalid Caster sign");
+        this.logger?.verbose(`Caster sign OK`);
     }
 }

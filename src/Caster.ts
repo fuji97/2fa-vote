@@ -28,11 +28,14 @@ export class Caster {
     id: number;
     signatures: Array<lrs.Sign>;
 
-    constructor(id: number, keypair: ecdsa.KeyPair, scope: Scope, publicParameters: PublicParameters) {
+    logger: any;
+
+    constructor(id: number, keypair: ecdsa.KeyPair, scope: Scope, publicParameters: PublicParameters, logger?: any) {
         this.id = id;
         this.keypair = keypair;
         this.publicParameters = publicParameters;
         this.scope = scope;
+        this.logger = logger;
 
         this.signatures = new Array<lrs.Sign>();
     }
@@ -40,6 +43,8 @@ export class Caster {
     async encryptVote(vote: Vote, pubKey: eddsa.PublicKey, sign: eddsa.Sign, k?: Scalar): Promise<EncryptedVote> {
         // Generate k
         k = k ?? randomScalar();
+
+        this.logger?.verbose(`Encrypting vote ${vote}`);
 
         // Create CESV Input
         const cesvInput: CesvInput = {
@@ -51,14 +56,17 @@ export class Caster {
             m: vote,
             pub: pubKey.toArray(),
             s: sign.S
-        }
+        };
+
 
         // Create proof
+        this.logger?.verbose(`Generating CESV proof...`);
         const cesvProof = await cesv.generateProof(cesvInput);
 
         // Check proof
+        this.logger?.verbose(`Verifying CESV proof...`);
         assert(await cesv.verifyProof(cesvProof.proof, cesvProof.publicSignals), "Invalid CESV Proof");
-        //console.log("Valid CESV Proof!");
+        this.logger?.verbose(`CESV proof OK`);
 
         // Create CEVI Input
         const ceviInput: CeviInput = {
@@ -67,14 +75,16 @@ export class Caster {
             Y: this.publicParameters.authorityKey.toArray(),
             k: k!,
             m: vote
-        }
+        };
 
         // Create proof
+        this.logger?.verbose(`Generating CEVI proof...`);
         const ceviProof = await cevi.generateProof(ceviInput);
 
         // Check proof
+        this.logger?.verbose(`Verifying CEVI proof...`);
         assert(await cevi.verifyProof(ceviProof.proof, ceviProof.publicSignals), "Invalid CEVI Proof");
-        //console.log("Valid CEVI Proof!");
+        this.logger?.verbose(`CEVI proof OK`);
 
         return {
             vote: {
@@ -84,10 +94,12 @@ export class Caster {
             cesv: cesvProof,
             cevi: ceviProof,
             caster: this.id
-        }
+        };
     }
 
     verifyVoterSign(ballot: Ballot): void {
+        this.logger?.verbose(`Verifying ballot ${BallotConverter.toShortString(ballot)}`);
+
         assert(lrs.verify(BallotConverter.voteToHexString(ballot), <lrs.Sign>ballot.voterSign, this.scope),
             "Invalid Linkable Ring Signature");
 
@@ -95,19 +107,23 @@ export class Caster {
         for (const sig in this.signatures) {
             assert(!lrs.link(<lrs.Sign>ballot.voterSign, sig), "Double signature detected!");
         }
+        this.logger?.verbose(`Ballot ${BallotConverter.toShortString(ballot)} OK`);
     }
 
     async signBallot(ballot: Ballot): Promise<Ballot> {
+        this.logger?.verbose(`Signing ballot ${BallotConverter.toShortString(ballot)}`);
         const msg = BallotConverter.voteToHexString(ballot);
         const sign = await ecdsa.sign(msg, this.keypair.privateKey);
 
         await ecdsa.verify(msg, this.keypair.publicKey, sign);
+        this.logger?.verbose(`Sign: ${sign}`);
 
         ballot.casterSign = sign;
         return ballot;
     }
 
     castBallot(ballot: Ballot): void {
+        this.logger?.verbose(`Casting ballot ${BallotConverter.toShortString(ballot)}`);
         this.signatures.push(<lrs.Sign>ballot.voterSign);
     }
 }

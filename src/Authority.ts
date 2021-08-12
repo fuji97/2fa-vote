@@ -5,6 +5,7 @@ import * as babyjubjub from "./babyjubjub";
 import * as elgamal from "./elgamal";
 import * as ballots from "./ballot";
 import assert from "assert";
+import {BallotConverter} from "./ballot";
 
 export class Authority {
     pp: PublicParameters;
@@ -13,7 +14,9 @@ export class Authority {
     casters: Map<number, CasterData>;
     ballots: Map<number, Array<ballots.Ballot>>;
 
-    constructor(keypair: babyjubjub.KeyPair, votingOptions: Vote[]) {
+    logger: any;
+
+    constructor(keypair: babyjubjub.KeyPair, votingOptions: Vote[], logger?: any) {
         this.keypair = keypair;
         this.pp = {
             authorityKey: this.keypair.publicKey,
@@ -21,6 +24,7 @@ export class Authority {
             elGamalPPoint: babyjubjub.Base8,
             votingOptions: votingOptions
         };
+        this.logger = logger;
 
         this.voters = new Array<babyjubjub.PublicKey>();
         this.casters = new Map<number, CasterData>();
@@ -32,6 +36,7 @@ export class Authority {
     }
 
     async receiveBallot(ballot: ballots.Ballot): Promise<void> {
+        this.logger?.verbose(`Receiving ballot ${BallotConverter.toShortString(ballot)}`);
         await this.verifyBallot(ballot);
 
         if (!this.ballots.has(ballot.caster)) {
@@ -47,9 +52,12 @@ export class Authority {
         const scopedBallots = this.ballots.get(ballot.caster);
 
         await ballots.verifyBallot(ballot, data, scopedBallots, this.pp);
+        this.logger?.verbose(`Ballot ${BallotConverter.toShortString(ballot)} OK`);
     }
 
     tally(): Map<Vote, number> {
+        this.logger?.verbose(`Tallying ${this.ballots.size} ballots`);
+
         const pointMap = this.buildPointMap();
         const voteMap = new Map<Vote, number>();
 
@@ -63,6 +71,7 @@ export class Authority {
 
                 const vote = firstFromMap(pointMap, (key, val) => dec.equals(key));
                 assert(vote != undefined, "Invalid vote");
+                this.logger?.verbose(`Ballot ${BallotConverter.toShortString(ballot)} voted for ${vote}`);
                 voteMap.set(vote, voteMap.get(vote)! + 1);
             }
         }

@@ -57,6 +57,10 @@ export const BallotConverter = {
         }
     },
 
+    toShortString(ballot: Ballot): string {
+        return this.voteToHexString(ballot).slice(0,6);
+    },
+
     fromEncryptedVote(vote: EncryptedVote): Ballot {
         return {
             vote: vote.vote,
