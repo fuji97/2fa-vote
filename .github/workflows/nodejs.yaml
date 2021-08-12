@@ -69,7 +69,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: ${{ steps.npm-cache.outputs.dir }}
-          key: ${{ runner.os }}-node-v1-${{ hashFiles('**/package-lock.json') }}
+          key: ${{ runner.os }}-node-${{ secrets.CACHE_VERSION }}-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.os }}-node-
       - name: Restore snarkjs files
@@ -77,9 +77,7 @@ jobs:
         uses: actions/cache@v2
         with:
           path: out/**/*
-          key: ${{ runner.os }}-snarkjs-v1-${{ hashFiles('circuits/**/*') }}-${{ hashFiles('ptau/*.ptau') }}
-          restore-keys: |
-            ${{ runner.os }}-snarkjs-
+          key: ${{ runner.os }}-snarkjs-${{ secrets.CACHE_VERSION }}-${{ hashFiles('circuits/**/*') }}-${{ hashFiles('ptau/*.ptau') }}
       - name: Install dependencies
         run: npm ci
       - name: Build project
