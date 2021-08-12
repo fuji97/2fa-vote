@@ -7,7 +7,7 @@
     "generate-snarkjs": "./snarkjs_generate.sh",
     "build": "tsc --build",
     "clean": "tsc --build --clean",
-    "test": "jest",
+    "test": "jest --forceExit",
     "flow": "node js/manual_tests/test.js"
   },
   "repository": {
