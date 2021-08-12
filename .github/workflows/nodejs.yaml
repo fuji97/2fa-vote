@@ -76,7 +76,7 @@ jobs:
         id: cache-snarkjs
         uses: actions/cache@v2
         with:
-          path: ~/out
+          path: out/**/*
           key: ${{ runner.os }}-snarkjs-${{ hashFiles('circuits/**/*') }}-${{ hashFiles('ptau/*.ptau') }}
           restore-keys: |
             ${{ runner.os }}-snarkjs-
