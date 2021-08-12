@@ -4,6 +4,7 @@ import {ElGamal} from "./elgamal";
 import * as snarkjs from "snarkjs";
 import * as eddsa from "./eddsa";
 import * as babyjubjub from "./babyjubjub";
+import * as BabyJub from "./babyjubjub";
 
 type VerificationKey = any
 
@@ -113,6 +114,13 @@ export const cesv = {
             Y: pp.authorityKey.toArray(),
             pub: pubKey.toArray()
         }
+    },
+
+    extractVote: function(input: CesvPublicInput): ElGamal {
+        return {
+            C: BabyJub.Point.fromArray(input.C),
+            D: BabyJub.Point.fromArray(input.D)
+        }
     }
 }
 
@@ -155,6 +163,13 @@ export const cevi = {
             P: pp.elGamalPPoint.toArray(),
             B: pp.elGamalBasePoint.toArray(),
             Y: pp.authorityKey.toArray()
+        }
+    },
+
+    extractVote: function(input: CeviPublicInput): ElGamal {
+        return {
+            C: BabyJub.Point.fromArray(input.C),
+            D: BabyJub.Point.fromArray(input.D)
         }
     }
 }
