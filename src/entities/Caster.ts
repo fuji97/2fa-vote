@@ -1,12 +1,12 @@
-import {PublicParameters, Vote, Scalar, Scope} from "./types";
-import {CesvInput, CeviInput, cesv, cevi, ProofSignals} from "./proof";
-import {Base8, randomScalar} from "./babyjubjub";
-import {ElGamal} from "./elgamal";
-import {Ballot, BallotConverter} from "./ballot";
-import * as BabyJub from "./babyjubjub";
-import * as eddsa from "./eddsa";
-import * as lrs from "./lrs";
-import * as ecdsa from "./ecdsa";
+import {PublicParameters, Vote, Scalar, Scope} from "../models/types";
+import {CesvInput, CeviInput, cesv, cevi, ProofSignals} from "../models/proof";
+import {Base8, randomScalar} from "../cryptography/babyjubjub";
+import {ElGamal} from "../cryptography/elgamal";
+import {Ballot, BallotConverter} from "../models/ballot";
+import * as BabyJub from "../cryptography/babyjubjub";
+import * as eddsa from "../cryptography/eddsa";
+import * as lrs from "../cryptography/lrs";
+import * as ecdsa from "../cryptography/ecdsa";
 import assert from "assert";
 
 export type CasterData = {

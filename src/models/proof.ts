@@ -1,10 +1,10 @@
 import {Scalar, PublicParameters} from "./types";
-import {ElGamal} from "./elgamal";
+import {ElGamal} from "../cryptography/elgamal";
 // @ts-ignore
 import * as snarkjs from "snarkjs";
-import * as eddsa from "./eddsa";
-import * as babyjubjub from "./babyjubjub";
-import * as BabyJub from "./babyjubjub";
+import * as eddsa from "../cryptography/eddsa";
+import * as babyjubjub from "../cryptography/babyjubjub";
+import * as BabyJub from "../cryptography/babyjubjub";
 
 type VerificationKey = any
 
@@ -17,13 +17,13 @@ type ProofInput = {
 const CESV_CIRCUIT: ProofInput = {
     wasm: "./out/correct_encrypt_signed_vote/circuit.wasm",
     zkey: "./out/correct_encrypt_signed_vote/circuit.zkey",
-    verificationKey: require("../out/correct_encrypt_signed_vote/verification_key.json") as VerificationKey
+    verificationKey: require("../../out/correct_encrypt_signed_vote/verification_key.json") as VerificationKey
 }
 
 const CEVI_CIRCUIT: ProofInput = {
     wasm: "./out/correct_encrypt_valid_input/circuit.wasm",
     zkey: "./out/correct_encrypt_valid_input/circuit.zkey",
-    verificationKey: require("../out/correct_encrypt_valid_input/verification_key.json") as VerificationKey
+    verificationKey: require("../../out/correct_encrypt_valid_input/verification_key.json") as VerificationKey
 }
 
 type ElGamalPublicInput = {

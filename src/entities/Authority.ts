@@ -1,11 +1,11 @@
-import {PublicParameters, Vote, Point} from "./types";
+import {PublicParameters, Vote, Point} from "../models/types";
 import {CasterData} from "./Caster";
-import {firstFromMap} from "./utils";
-import * as babyjubjub from "./babyjubjub";
-import * as elgamal from "./elgamal";
-import * as ballots from "./ballot";
+import {firstFromMap} from "../utils";
+import * as babyjubjub from "../cryptography/babyjubjub";
+import * as elgamal from "../cryptography/elgamal";
+import * as ballots from "../models/ballot";
 import assert from "assert";
-import {BallotConverter} from "./ballot";
+import {BallotConverter} from "../models/ballot";
 
 export class Authority {
     pp: PublicParameters;

@@ -1,4 +1,4 @@
-import * as ecdsa from "../ecdsa";
+import * as ecdsa from "../cryptography/ecdsa";
 import * as eccrypto from "eccrypto";
 import * as crypto from "crypto";
 

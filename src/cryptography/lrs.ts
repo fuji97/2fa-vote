@@ -1,6 +1,6 @@
 // @ts-ignore
 import lrs from "lrs";
-import {Scope} from "./types";
+import {Scope} from "../models/types";
 import crypto from "crypto";
 
 export type KeyPair = {

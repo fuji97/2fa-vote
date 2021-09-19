@@ -1,6 +1,6 @@
 // @ts-ignore
-import {babyJub as bjj} from "circomlib";
-import * as types from "./types";
+import {babyJub as bjj} from "../../node_modules/circomlib";
+import * as types from "../models/types";
 // @ts-ignore
 import {Scalar} from "ffjavascript";
 import assert from "assert";

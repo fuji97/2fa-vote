@@ -1,5 +1,5 @@
-import * as eddsa from "../eddsa";
-import {Base8} from "../babyjubjub";
+import * as eddsa from "../cryptography/eddsa";
+import {Base8} from "../cryptography/babyjubjub";
 
 const msg = 4857390485n;
 

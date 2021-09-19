@@ -1,18 +1,18 @@
-import {Point, Scope, Vote} from "../types";
-import {Authority} from "../Authority";
-import * as babyjubjub from "../babyjubjub";
-import * as lrs from "../lrs";
-import {Caster, CasterData, EncryptedVote} from "../Caster";
-import * as ecdsa from "../ecdsa";
-import * as eddsa from "../eddsa";
-import * as elgamal from "../elgamal";
-import * as proof from "../proof";
-import {CastedVote, Voter} from "../Voter";
-import {Verifier} from "../Verifier";
-import {randomScalar} from "../babyjubjub";
+import {Point, Scope, Vote} from "../models/types";
+import {Authority} from "../entities/Authority";
+import * as babyjubjub from "../cryptography/babyjubjub";
+import * as lrs from "../cryptography/lrs";
+import {Caster, CasterData, EncryptedVote} from "../entities/Caster";
+import * as ecdsa from "../cryptography/ecdsa";
+import * as eddsa from "../cryptography/eddsa";
+import * as elgamal from "../cryptography/elgamal";
+import * as proof from "../models/proof";
+import {CastedVote, Voter} from "../entities/Voter";
+import {Verifier} from "../entities/Verifier";
+import {randomScalar} from "../cryptography/babyjubjub";
 import {toJson} from "../utils";
-import {cesv, cevi} from "../proof";
-import {Ballot, BallotConverter} from "../ballot";
+import {cesv, cevi} from "../models/proof";
+import {Ballot, BallotConverter} from "../models/ballot";
 
 describe("Test protocol flow", () => {
     const votingOptions: Vote[] = [1n, 2n];

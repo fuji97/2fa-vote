@@ -1,19 +1,19 @@
-import {Voter} from "../Voter";
-import * as babyjubjub from "../babyjubjub";
-import {PublicParameters, Vote} from "../types";
-import * as eddsa from "../eddsa";
+import {Voter} from "../entities/Voter";
+import * as babyjubjub from "../cryptography/babyjubjub";
+import {PublicParameters, Vote} from "../models/types";
+import * as eddsa from "../cryptography/eddsa";
 import assert from "assert";
-import {Caster, CasterData} from "../Caster";
-import {Authority} from "../Authority";
+import {Caster, CasterData} from "../entities/Caster";
+import {Authority} from "../entities/Authority";
 import {toJson} from "../utils";
-import {decrypt, encrypt} from "../elgamal";
-import {cevi, cesv} from "../proof";
-import {generateKeypair} from "../lrs";
-import * as ecdsa from "../ecdsa";
-import {Verifier} from "../Verifier";
+import {decrypt, encrypt} from "../cryptography/elgamal";
+import {cevi, cesv} from "../models/proof";
+import {generateKeypair} from "../cryptography/lrs";
+import * as ecdsa from "../cryptography/ecdsa";
+import {Verifier} from "../entities/Verifier";
 
 const bigInt = require("big-integer");
-import {BallotConverter} from "../ballot";
+import {BallotConverter} from "../models/ballot";
 import winston from "winston";
 
 (async () => {

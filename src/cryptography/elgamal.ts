@@ -1,4 +1,4 @@
-import {Scalar, Point} from "./types";
+import {Scalar, Point} from "../models/types";
 import randBetween from "big-integer";
 import {Base8, Generator} from "./babyjubjub";
 

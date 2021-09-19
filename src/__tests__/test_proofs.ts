@@ -1,10 +1,10 @@
-import {cesv, CesvInput, CesvPublicInput, cevi, CeviInput, CeviPublicInput} from "../proof";
-import * as eddsa from "../eddsa";
-import * as babyjub from "../babyjubjub";
-import * as elgamal from "../elgamal";
-import {PublicParameters, Scalar} from "../types";
-import {randomScalar, scalarToPoint} from "../babyjubjub";
-import {EncryptedVote} from "../Caster";
+import {cesv, CesvInput, CesvPublicInput, cevi, CeviInput, CeviPublicInput} from "../models/proof";
+import * as eddsa from "../cryptography/eddsa";
+import * as babyjub from "../cryptography/babyjubjub";
+import * as elgamal from "../cryptography/elgamal";
+import {PublicParameters, Scalar} from "../models/types";
+import {randomScalar, scalarToPoint} from "../cryptography/babyjubjub";
+import {EncryptedVote} from "../entities/Caster";
 import {toJson} from "../utils";
 
 const vote = 1n;

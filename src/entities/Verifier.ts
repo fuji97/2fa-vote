@@ -1,5 +1,5 @@
-import {PublicParameters} from "./types";
-import {Ballot, BallotConverter, verifyBallot} from "./ballot";
+import {PublicParameters} from "../models/types";
+import {Ballot, BallotConverter, verifyBallot} from "../models/ballot";
 import {CasterData} from "./Caster";
 import assert from "assert";
 

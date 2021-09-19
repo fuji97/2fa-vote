@@ -1,5 +1,5 @@
-import * as lrs from "../lrs";
-import {Scope} from "../types";
+import * as lrs from "../cryptography/lrs";
+import {Scope} from "../models/types";
 
 const msg = "Hello World!";
 

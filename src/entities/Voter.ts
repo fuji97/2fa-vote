@@ -1,14 +1,14 @@
-import {PublicParameters, Vote} from "./types";
-import * as eddsa from "./eddsa";
-import * as babyjubjub from "./babyjubjub";
+import {PublicParameters, Vote} from "../models/types";
+import * as eddsa from "../cryptography/eddsa";
+import * as babyjubjub from "../cryptography/babyjubjub";
 import assert from "assert";
 import {EncryptedVote} from "./Caster";
-import * as lrs from "./lrs";
-import { CesvInput,  CesvPublicInput, CeviPublicInput, cesv, cevi} from "./proof";
-import {ElGamal} from "./elgamal";
-import {Ballot, BallotConverter} from "./ballot";
-import * as ecdsa from "./ecdsa";
-import {toJson} from "./utils";
+import * as lrs from "../cryptography/lrs";
+import { CesvInput,  CesvPublicInput, CeviPublicInput, cesv, cevi} from "../models/proof";
+import {ElGamal} from "../cryptography/elgamal";
+import {Ballot, BallotConverter} from "../models/ballot";
+import * as ecdsa from "../cryptography/ecdsa";
+import {toJson} from "../utils";
 
 export type CastedVote = {
     vote: Vote;

@@ -1,7 +1,7 @@
-import {Scalar, Point} from "./types";
+import {Scalar, Point} from "../models/types";
 import * as babyjubjub from "./babyjubjub";
 // @ts-ignore
-import {eddsa} from "circomlib";
+import {eddsa} from "../../node_modules/circomlib";
 
 export type Sign = {
     R8: Point;

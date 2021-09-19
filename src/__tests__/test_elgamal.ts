@@ -1,8 +1,8 @@
-import * as elgamal from "../elgamal";
-import * as babyjub from "../babyjubjub";
-import {Scalar} from "../types";
-import {randomScalar, scalarToPoint} from "../babyjubjub";
-import {ElGamal} from "../elgamal";
+import * as elgamal from "../cryptography/elgamal";
+import * as babyjub from "../cryptography/babyjubjub";
+import {Scalar} from "../models/types";
+import {randomScalar, scalarToPoint} from "../cryptography/babyjubjub";
+import {ElGamal} from "../cryptography/elgamal";
 
 const msg = 432432n;
 

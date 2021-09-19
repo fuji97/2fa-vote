@@ -1,12 +1,12 @@
 import {PublicParameters} from "./types";
 import {cevi, Proof} from "./proof";
-import {CasterData, EncryptedVote} from "./Caster";
+import {CasterData, EncryptedVote} from "../entities/Caster";
 import {bigintToBuf, bufToBigint, TypedArray} from "bigint-conversion";
 import assert from "assert";
-import {ElGamal} from "./elgamal";
-import * as babyjub from "./babyjubjub";
-import * as ecdsa from "./ecdsa";
-import * as lrs from "./lrs";
+import {ElGamal} from "../cryptography/elgamal";
+import * as babyjub from "../cryptography/babyjubjub";
+import * as ecdsa from "../cryptography/ecdsa";
+import * as lrs from "../cryptography/lrs";
 
 export type Ballot = {
     vote: ElGamal,
