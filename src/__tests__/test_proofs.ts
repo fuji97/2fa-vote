@@ -124,7 +124,7 @@ describe("Test Zero Knowledge Proofs", () => {
         const proof = await cesv.generateProof(cesvInput);
 
         await expect(cesv.verifyProof(proof.proof, proof.publicSignals)).resolves.not.toBeTruthy();
-    });
+    }, 15000);
 
     test("Generate CESV proof with an invalid public key", async () => {
         const sig = eddsa.sign(vote, voterKeypair.privateKey);
@@ -144,7 +144,7 @@ describe("Test Zero Knowledge Proofs", () => {
         const proof = await cesv.generateProof(cesvInput);
 
         await expect(cesv.verifyProof(proof.proof, proof.publicSignals)).resolves.not.toBeTruthy();
-    });
+    }, 15000);
 
     test("Verify CEVI proof with an invalid authority key", async () => {
         let newPrivKey = randomScalar();
