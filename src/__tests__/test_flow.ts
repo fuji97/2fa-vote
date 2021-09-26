@@ -142,6 +142,12 @@ describe("Test protocol flow", () => {
         expect(lrs.link(ballots[2].voterSign!, ballots[0].voterSign!)).not.toBeTruthy();
     });
 
+    it("Test double vote identification", async () => {
+        let doubleVote = voters[0].signBallot(BallotConverter.fromEncryptedVote(encryptedVotes[1]));
+        expect(lrs.verify(BallotConverter.voteToHexString(doubleVote), doubleVote.voterSign!, voters[0].scope)).toBeTruthy();
+        expect(lrs.link(ballots[0].voterSign!, doubleVote.voterSign!)).toBeTruthy();
+    });
+
     it("[Caster] Verify Linkable Ring Signature", async () => {
         expect(() => casters[0].verifyVoterSign(ballots[0])).not.toThrow();
         expect(() => casters[0].verifyVoterSign(ballots[1])).not.toThrow();
